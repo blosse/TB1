@@ -4,7 +4,7 @@ CFLAGS = -Wall -Wextra -std=c11 -I/opt/homebrew/include
 LDFLAGS = -L/opt/homebrew/lib -lportaudio -lm
 
 # === Source and build ===
-SRC = synth.c
+SRC = synth.c waveform.c
 OBJ_DIR = build
 OBJ = $(SRC:.c=.o)
 OBJ := $(addprefix $(OBJ_DIR)/, $(notdir $(OBJ)))

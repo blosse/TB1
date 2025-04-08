@@ -3,7 +3,9 @@
 
 #include <stdio.h>
 #include <math.h>
+#include <string.h>
 #include <portaudio.h>
+#include "waveform.h"
 
 #define SAMPLE_RATE 44100
 #define FREQUENCY 440.0
@@ -13,6 +15,7 @@
 
 typedef struct {
     float phase;
+    WaveformType waveform;
 } SynthData;
 
 static int audioCallback(
@@ -26,13 +29,11 @@ static int audioCallback(
     (void)timeInfo;
     (void)statusFlags;
 
-
-
     SynthData *data = (SynthData*)userData;
     float *out = (float*)outputBuffer;
 
     for (unsigned int i = 0; i < framesPerBuffer; i++) {
-        float sample = AMPLITUDE * sinf(data->phase);
+        float sample = AMPLITUDE * generate_sample(data->waveform, data->phase);
         *out++ = sample; // left channel
         *out++ = sample; // right channel
 
@@ -43,11 +44,30 @@ static int audioCallback(
     return paContinue;
 }
 
-int main() {
+WaveformType parse_waveform(const char *arg) {
+    if (strcmp(arg, "sine") == 0) return WAVE_SINE;
+    if (strcmp(arg, "square") == 0) return WAVE_SQUARE;
+    if (strcmp(arg, "triangle") == 0) return WAVE_TRIANGLE;
+    if (strcmp(arg, "saw") == 0) return WAVE_SAW;
+
+    // Default
+    printf("Whoops, incorrect wave, playing a sine");
+    return WAVE_SINE;
+}
+
+int main(int argc, char *argv[]) {
 
     Pa_Initialize();
+    WaveformType selectedWaveform = WAVE_SINE;
 
-    SynthData data = { .phase = 0.0f };
+    if (argc > 1) {
+        selectedWaveform = parse_waveform(argv[1]);
+    }
+
+    SynthData data = {
+        .phase = 0.0f,
+        .waveform = selectedWaveform
+    };
     PaStream *stream;
 
     Pa_OpenDefaultStream(&stream,
@@ -61,7 +81,7 @@ int main() {
 
     Pa_StartStream(stream);
 
-    printf("Playing a sinewave. Press Enter to stop\n");
+    printf("Playing a %s. Press Enter to stop\n", waveNames[data.waveform]);
     getchar();
 
     Pa_StopStream(stream);
