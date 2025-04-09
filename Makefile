@@ -1,10 +1,13 @@
 # === Compiler and flags ===
 CC = clang
-CFLAGS = -Wall -Wextra -std=c11 -I/opt/homebrew/include
-LDFLAGS = -L/opt/homebrew/lib -lportaudio -lm
+LIBS = -lportaudio -lraylib -lm \
+        -framework CoreVideo -framework IOKit \
+		-framework Cocoa -framework GLUT -framework OpenGL
+CFLAGS = -Wall -Wextra -std=c11 -Iinclude -Iexternal -I/opt/homebrew/include -isystem external/
+LDFLAGS = -L/opt/homebrew/lib 
 
 # === Source and build ===
-SRC = synth.c waveform.c
+SRC = main.c synth.c waveform.c gui.c
 OBJ_DIR = build
 OBJ = $(SRC:.c=.o)
 OBJ := $(addprefix $(OBJ_DIR)/, $(notdir $(OBJ)))
@@ -15,7 +18,7 @@ TARGET = tb1
 all: $(TARGET)
 
 $(TARGET): $(OBJ)
-	$(CC) -o $@ $^ $(LDFLAGS)
+	$(CC) -o $@ $^ $(LDFLAGS) $(LIBS)
 
 # === Compile .c to build/*.o ===
 $(OBJ_DIR)/%.o: %.c | $(OBJ_DIR)
