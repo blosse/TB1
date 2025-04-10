@@ -60,6 +60,18 @@ int run_gui(SynthData *data) {
             data->oscMix = localOscMix;
             pthread_mutex_unlock(&data->lock);
         }
+
+        // Lowpass filter slider
+        // Convert actual cutoff frequency to log scale (range: log(20) to log(20000))
+        float logMin = log10f(20.0f);
+        float logMax = log10f(20000.0f);
+        float logCutoff = log10f(data->lowpass_cutoff);
+        if (GuiSlider((Rectangle){ 100 + SLIDER_LENGTH_SHORT, 95, SLIDER_LENGTH_SHORT, 20 }, NULL, "LP", &logCutoff, logMin, logMax)) {
+            pthread_mutex_lock(&data->lock);
+            data->lowpass_cutoff = powf(10.0f, logCutoff);
+            update_lowpass_alpha(data);
+            pthread_mutex_unlock(&data->lock);
+        }
         
         EndDrawing();
     }
