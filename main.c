@@ -6,14 +6,10 @@
 #include "synth.h"
 #include "waveform.h"
 
-int main(int argc, char *argv[]) {
-
-    WaveformType selectedWaveform = WAVE_SINE;
-
-    if (argc > 1) selectedWaveform = parse_waveform(argv[1]);
+int main() {
 
     SynthData data = {
-        .waveform = selectedWaveform,
+        .waveform = WAVE_SINE,
         .frequency = 440.0f
     };
     PaStream *stream;
