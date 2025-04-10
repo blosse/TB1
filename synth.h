@@ -19,6 +19,12 @@ typedef struct {
 typedef struct {
     Oscillator osc1;
     Oscillator osc2;
+    float oscMix; // Span: 0-1
+
+    float last_sample;
+    float LP_cutoff;
+    float LP_alpha;
+
     pthread_mutex_t lock;
 } SynthData;
 

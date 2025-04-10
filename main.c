@@ -8,10 +8,22 @@
 
 int main() {
 
-    SynthData data = {
+    Oscillator osc1 = {
+        .phase = 0.0f,
+        .frequency = 440.0f,
         .waveform = WAVE_SINE,
-        .frequency = 440.0f
     };
+    Oscillator osc2 = {
+        .phase = 0.0f,
+        .frequency = 660.0f,
+        .waveform = WAVE_SINE,
+    };
+    SynthData data = {
+        .osc1 = osc1,
+        .osc2 = osc2,
+        .oscMix = 0.5f,
+    };
+
     PaStream *stream;
     if (start_audio(&data, &stream) != paNoError) {
         fprintf(stderr, "Failed to start audio.\n");

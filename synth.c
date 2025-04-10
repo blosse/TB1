@@ -34,7 +34,7 @@ static int audioCallback(
     for (unsigned int i = 0; i < framesPerBuffer; i++) {
         float sampleOsc1 = AMPLITUDE * generate_sample(data->osc1.waveform, data->osc1.phase);
         float sampleOsc2 = AMPLITUDE * generate_sample(data->osc2.waveform, data->osc2.phase);
-        float oscMix = AMPLITUDE * 0.5f * (sampleOsc1 + sampleOsc2);
+        float oscMix = AMPLITUDE * ((data->oscMix * sampleOsc1) + ((1 - data->oscMix) * sampleOsc2));
         *out++ = oscMix; // left channel
         *out++ = oscMix; // right channel
 
@@ -49,8 +49,6 @@ static int audioCallback(
 }
 
 int start_audio(SynthData *data, PaStream **stream) {
-    data->osc1 = (Oscillator){ .frequency = 440.0f, .phase = 0.0f, .waveform = WAVE_SINE };
-    data->osc2 = (Oscillator){ .frequency = 660.0f, .phase = 0.0f, .waveform = WAVE_SINE };
     pthread_mutex_init(&data->lock, NULL);
     Pa_Initialize();
     Pa_OpenDefaultStream(stream,

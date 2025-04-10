@@ -4,10 +4,11 @@
 #define TWO_PI 6.28318531f
 
 const char *waveNames[NUM_WAVEFORMS] = {
-    "sine",
-    "square",
-    "triangle",
-    "saw" };
+    "SINE",
+    "SQR",
+    "TRI",
+    "SAW"
+};
 
 float generate_sample(WaveformType type, float phase) {
     switch (type) {
