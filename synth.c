@@ -21,39 +21,36 @@ static int audioCallback(
     // Looks like this? [ left0, right0, left1, right1, left2, right2, ... ]
     // Where each entry is a 32 bit float
     float *out = (float*)outputBuffer;
+    float freqOsc1, freqOsc2;
     
     SynthData *data = (SynthData*)userData;
-    float freq;
+
+    // Lock the mutex to safely access shared data
     pthread_mutex_lock(&data->lock);
-    freq = data->frequency;
+    freqOsc1 = data->osc1.frequency;  // Frequency of the first oscillator
+    freqOsc2 = data->osc2.frequency;  // Frequency of the second oscillator
     pthread_mutex_unlock(&data->lock);
 
     for (unsigned int i = 0; i < framesPerBuffer; i++) {
-        float sample = AMPLITUDE * generate_sample(data->waveform, data->phase);
-        *out++ = sample; // left channel
-        *out++ = sample; // right channel
+        float sampleOsc1 = AMPLITUDE * generate_sample(data->osc1.waveform, data->osc1.phase);
+        float sampleOsc2 = AMPLITUDE * generate_sample(data->osc2.waveform, data->osc2.phase);
+        float oscMix = AMPLITUDE * 0.5f * (sampleOsc1 + sampleOsc2);
+        *out++ = oscMix; // left channel
+        *out++ = oscMix; // right channel
 
-        data->phase += (float)(TWO_PI * freq / SAMPLE_RATE);
-        if (data->phase >= TWO_PI) data->phase -= TWO_PI;
+        data->osc1.phase += (float)(TWO_PI * freqOsc1 / SAMPLE_RATE);
+        if (data->osc1.phase >= TWO_PI) data->osc1.phase -= TWO_PI;
+
+        data->osc2.phase += (float)(TWO_PI * freqOsc2 / SAMPLE_RATE);
+        if (data->osc2.phase >= TWO_PI) data->osc2.phase -= TWO_PI;
     }
 
     return paContinue;
 }
 
-WaveformType parse_waveform(const char *arg) {
-    if (strcmp(arg, "sine") == 0) return WAVE_SINE;
-    if (strcmp(arg, "square") == 0) return WAVE_SQUARE;
-    if (strcmp(arg, "triangle") == 0) return WAVE_TRIANGLE;
-    if (strcmp(arg, "saw") == 0) return WAVE_SAW;
-
-    // Default
-    printf("Whoops, incorrect wave, playing a sine");
-    return WAVE_SINE;
-}
-
 int start_audio(SynthData *data, PaStream **stream) {
-    data->phase = 0.0f;
-    data->frequency = 440.0f;
+    data->osc1 = (Oscillator){ .frequency = 440.0f, .phase = 0.0f, .waveform = WAVE_SINE };
+    data->osc2 = (Oscillator){ .frequency = 660.0f, .phase = 0.0f, .waveform = WAVE_SINE };
     pthread_mutex_init(&data->lock, NULL);
     Pa_Initialize();
     Pa_OpenDefaultStream(stream,

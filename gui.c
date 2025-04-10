@@ -10,6 +10,7 @@ float gui_frequency = 440.0f;
 
 int run_gui(SynthData *data) {
     InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "TB1");
+    GuiLoadStyle("./external/style_candy.rgs");
     SetTargetFPS(60);
 
     float localFreq = data->frequency;
@@ -17,7 +18,7 @@ int run_gui(SynthData *data) {
 
     while (!WindowShouldClose()) {
         BeginDrawing();
-        ClearBackground(RAYWHITE);
+        ClearBackground(GetColor(0xfff5e1ff));
 
         //Waveform selector
         int previousWave = data->waveform;

@@ -14,11 +14,15 @@ typedef struct {
     float frequency;
     float phase;
     WaveformType waveform;
+} Oscillator;
+
+typedef struct {
+    Oscillator osc1;
+    Oscillator osc2;
     pthread_mutex_t lock;
 } SynthData;
 
 int start_audio(SynthData *data, PaStream **stream);
 void stop_audio(PaStream *stream);
-WaveformType parse_waveform(const char *arg); 
 
 #endif
