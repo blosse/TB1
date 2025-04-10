@@ -8,11 +8,11 @@
 *.exe
 
 # Raylib & raygui externals
-/external/
-*.o
-*.a
-*.so
-*.dylib
+# /external/
+# *.o
+# *.a
+# *.so
+# *.dylib
 
 # MacOS specific
 .DS_Store
