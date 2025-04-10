@@ -16,5 +16,4 @@ const char *pitchHz[12] = {
 };
 
 float get_pitch(Pitch pitch) {
-    
 }

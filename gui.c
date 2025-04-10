@@ -7,6 +7,8 @@
 #define WINDOW_HEIGHT 250
 #define SLIDER_LENGTH_LONG (WINDOW_WIDTH - 90 - 60)
 #define SLIDER_LENGTH_SHORT (SLIDER_LENGTH_LONG / 2 - 5)
+#define KEY_WIDTH 30
+#define KEY_HEIGHT 40
 
 float gui_frequency = 440.0f;
 
@@ -71,6 +73,14 @@ int run_gui(SynthData *data) {
             data->lowpass_cutoff = powf(10.0f, logCutoff);
             update_lowpass_alpha(data);
             pthread_mutex_unlock(&data->lock);
+        }
+        
+        // Draw keys 
+        for (int i = 0; i < 8; i++) {
+            int offset = 60;
+            if (GuiToggle((Rectangle){ offset + (i * 35), 200, KEY_WIDTH, KEY_HEIGHT }, NULL, NULL)) {
+                // Some logic to select pitch here
+            }
         }
         
         EndDrawing();

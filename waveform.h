@@ -9,8 +9,8 @@ typedef enum {
     WAVE_SAW
 } WaveformType;
 
-float generate_sample(WaveformType type, float phase);
-
 const char *waveNames[NUM_WAVEFORMS];
+
+float generate_sample(WaveformType type, float phase);
 
 #endif
