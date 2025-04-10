@@ -1,0 +1,36 @@
+# Build artifacts
+/build/
+*.o
+*.out
+*.a
+*.so
+*.dylib
+*.exe
+
+# Raylib & raygui externals
+external/*.o
+external/*.a
+external/*.so
+external/*.dylib
+
+# MacOS specific
+.DS_Store
+
+# Editor files
+*.swp
+*~
+.vscode/
+*.code-workspace
+
+# Backup files
+*.bak
+*.tmp
+
+# Make-generated files
+tb1
+gui
+synth
+*.log
+
+# If using raygui .rgs styles but not editing them
+*.rgs~
