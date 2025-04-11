@@ -7,7 +7,7 @@ CFLAGS = -Wall -Wextra -std=c11 -Iinclude -Iexternal -I/opt/homebrew/include -is
 LDFLAGS = -L/opt/homebrew/lib 
 
 # === Source and build ===
-SRC = main.c synth.c waveform.c gui.c
+SRC = main.c synth.c waveform.c gui.c pitch.c
 OBJ_DIR = build
 OBJ = $(SRC:.c=.o)
 OBJ := $(addprefix $(OBJ_DIR)/, $(notdir $(OBJ)))
