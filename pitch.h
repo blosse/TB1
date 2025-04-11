@@ -16,5 +16,5 @@ typedef enum {
 
 const float *pitchHz[12];
 
-float calculate_frequency(int midiNote);
+float calculate_frequency(int midiNote, float detune);
 

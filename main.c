@@ -21,6 +21,7 @@ int main() {
     SynthData data = {
         .osc1 = osc1,
         .osc2 = osc2,
+        .osc2Detune = 0.0f,
         .oscMix = 0.5f,
     };
 

@@ -7,8 +7,8 @@
 #include <string.h>
 
 float lowpass_filter(float input, SynthData *data) {
-    float filtered = data->last_sample + data->lowpass_alpha * (input - data->last_sample);
-    data->last_sample = filtered;
+    float filtered = data->lowpass_last_sample + data->lowpass_alpha * (input - data->lowpass_last_sample);
+    data->lowpass_last_sample = filtered;
     return filtered;
 }
 
@@ -16,6 +16,13 @@ void update_lowpass_alpha(SynthData *data) {
     float rc = 1.0f / (2.0f * M_PI * data->lowpass_cutoff);
     float dt = 1.0f / SAMPLE_RATE;
     data->lowpass_alpha = dt / (rc + dt);
+}
+
+float highpass_filter(float input, SynthData *data) {
+    float output = data->highpass_alpha * (data->highpass_prev_output + input - data->highpass_prev_input);
+    data->highpass_prev_input = input;
+    data->highpass_prev_output = output;
+    return output;
 }
 
 static int audioCallback(
@@ -74,7 +81,7 @@ static int audioCallback(
 
 int start_audio(SynthData *data, PaStream **stream) {
     pthread_mutex_init(&data->lock, NULL);
-    data->last_sample = 0.0f;
+    data->lowpass_last_sample = 0.0f;
     update_lowpass_alpha(data);
     Pa_Initialize();
     Pa_OpenDefaultStream(stream,
