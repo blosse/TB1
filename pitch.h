@@ -1,3 +1,4 @@
+#include "synth.h"
 
 typedef enum {
     C,
@@ -18,3 +19,4 @@ const float *pitchHz[12];
 
 float calculate_frequency(int midiNote, float detune);
 
+void update_arp(SynthData *data);

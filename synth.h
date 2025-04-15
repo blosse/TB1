@@ -9,6 +9,7 @@
 #define AMPLITUDE 0.25
 #define TWO_PI (3.14159265 * 2)
 #define FRAMES_PER_BUFFER 64
+#define MAX_ARP_NOTES 8
 
 typedef struct {
     float frequency;
@@ -23,6 +24,12 @@ typedef struct {
     float amplitude;
     float osc2Detune;
     float oscMix;
+
+    int arp_notes[MAX_ARP_NOTES];
+    int arp_index;
+    int arp_note_count;
+    float arp_time;
+    float arp_interval;
 
     float lowpass_stage1;
     float lowpass_stage2;
