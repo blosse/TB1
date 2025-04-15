@@ -7,22 +7,34 @@
 #include <string.h>
 
 float lowpass_filter(float input, SynthData *data) {
+    input -= data->lowpass_feedback * data->lowpass_last_sample;
     float filtered = data->lowpass_last_sample + data->lowpass_alpha * (input - data->lowpass_last_sample);
     data->lowpass_last_sample = filtered;
     return filtered;
 }
 
 void update_lowpass_alpha(SynthData *data) {
-    float rc = 1.0f / (2.0f * M_PI * data->lowpass_cutoff);
+    float fc =  data->lowpass_cutoff;
+    float res = data->lowpass_resonance;
     float dt = 1.0f / SAMPLE_RATE;
-    data->lowpass_alpha = dt / (rc + dt);
+
+    float x = expf(-2.0f * M_PI * fc * dt);
+    data->lowpass_alpha = 1.0f - x;
+    data->lowpass_feedback = res * (1.0f - x);
 }
 
+// TODO figure out why adding resonance broke the LP
 float highpass_filter(float input, SynthData *data) {
     float output = data->highpass_alpha * (data->highpass_prev_output + input - data->highpass_prev_input);
     data->highpass_prev_input = input;
     data->highpass_prev_output = output;
     return output;
+}
+
+void update_highpass_alpha(SynthData *data) {
+    float rc = 1.0f / (2.0f * M_PI * data->highpass_cutoff);
+    float dt = 1.0f / SAMPLE_RATE;
+    data->highpass_alpha = rc / (rc + dt);
 }
 
 static int audioCallback(
@@ -62,8 +74,9 @@ static int audioCallback(
         // Mix oscillators
         float mixedSample = (mix * sampleOsc1) + ((1.0f - mix) * sampleOsc2);
 
-        // Apply filter
-        mixFiltered = lowpass_filter(mixedSample, data);
+        // Apply filters
+        float lpFiltered = lowpass_filter(mixedSample, data);
+        mixFiltered = highpass_filter(lpFiltered, data);
 
         *out++ = mixFiltered; // left channel
         *out++ = mixFiltered; // right channel

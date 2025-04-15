@@ -24,11 +24,14 @@ typedef struct {
     float oscMix;
 
     float lowpass_last_sample;
-    float lowpass_cutoff;
     float lowpass_alpha;
+    float lowpass_cutoff;
+    float lowpass_resonance;
+    float lowpass_feedback;
 
     float highpass_prev_input;
     float highpass_prev_output;
+    float highpass_cutoff;
     float highpass_alpha;
     
     pthread_mutex_t lock;
@@ -36,8 +39,10 @@ typedef struct {
 
 int start_audio(SynthData *data, PaStream **stream);
 void stop_audio(PaStream *stream);
+
 float lowpass_filter(float input, SynthData *data);
 void update_lowpass_alpha(SynthData *data);
+
 float highpass_filter(float input, SynthData *data);
 void update_highpass_alpha(SynthData *data);
 #endif
