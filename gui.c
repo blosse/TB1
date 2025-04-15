@@ -50,6 +50,7 @@ int run_gui(SynthData *data) {
     whiteKeyStates[0] = true;
     float localOscMix = data->oscMix;
     float localDetune = data->osc2Detune;
+    float localLPResonance = data->lowpass_resonance;
 
     while (!WindowShouldClose()) {
         BeginDrawing();
@@ -84,18 +85,38 @@ int run_gui(SynthData *data) {
             pthread_mutex_unlock(&data->lock);
         }
 
+        // Highpass filter slider
+        // Convert actual cutoff frequency to log scale (range: log(20) to log(20000))
+        float logMinHP = log10f(20.0f);
+        float logMaxHP = log10f(20000.0f);
+        float logCutoffHP = log10f(data->highpass_cutoff);
+        if (GuiSlider((Rectangle){ 295, 5, SLIDER_WIDTH_SHORT, 20 }, "HP", NULL, &logCutoffHP, logMinHP, logMaxHP)) {
+            pthread_mutex_lock(&data->lock);
+            data->highpass_cutoff = powf(10.0f, logCutoffHP);
+            update_highpass_alpha(data);
+            pthread_mutex_unlock(&data->lock);
+        }
+
         // Lowpass filter slider
         // Convert actual cutoff frequency to log scale (range: log(20) to log(20000))
-        float logMin = log10f(20.0f);
-        float logMax = log10f(20000.0f);
-        float logCutoff = log10f(data->lowpass_cutoff);
-        if (GuiSlider((Rectangle){ 295, 5, SLIDER_WIDTH_SHORT, 20 }, "LP", NULL, &logCutoff, logMin, logMax)) {
+        float logMinLP = log10f(20.0f);
+        float logMaxLP = log10f(20000.0f);
+        float logCutoffLP = log10f(data->lowpass_cutoff);
+        if (GuiSlider((Rectangle){ 295, 29, SLIDER_WIDTH_SHORT, 20 }, "LP", NULL, &logCutoffLP, logMinLP, logMaxLP)) {
             pthread_mutex_lock(&data->lock);
-            data->lowpass_cutoff = powf(10.0f, logCutoff);
+            data->lowpass_cutoff = powf(10.0f, logCutoffLP);
             update_lowpass_alpha(data);
             pthread_mutex_unlock(&data->lock);
         }
-        
+
+        // Lowpass resonance slider
+        if (GuiSlider((Rectangle){ 295, 53, SLIDER_WIDTH_SHORT, 20 }, "RES", NULL, &localLPResonance, 0.0f, 1.0f)) {
+            pthread_mutex_lock(&data->lock);
+            data->lowpass_resonance = localLPResonance;
+            update_lowpass_alpha(data);
+            pthread_mutex_unlock(&data->lock);
+        }
+
         // Draw white keys 
         for (int i = 0; i < NUM_WHITE_KEYS; i++) {
             GuiToggle(whiteKeyRects[i], NULL, &whiteKeyStates[i]);
