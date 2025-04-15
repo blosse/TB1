@@ -24,5 +24,32 @@ void update_arp(SynthData *data) {
         data->osc2.frequency = freq2;
         pthread_mutex_unlock(&data->lock);
     }
+}
 
+void add_arp_note(SynthData *data, int midiNote) {
+    pthread_mutex_lock(&data->lock);
+    for (int i = 0; i < data->arp_note_count; i++) {
+        if (data->arp_notes[i] == midiNote) {
+            pthread_mutex_unlock(&data->lock);
+            return;
+        }
+    }
+    if (data->arp_note_count < MAX_ARP_NOTES) {
+        data->arp_notes[data->arp_note_count++] = midiNote;
+    }
+    pthread_mutex_unlock(&data->lock);
+}
+
+void remove_arp_note(SynthData *data, int midiNote) {
+    pthread_mutex_lock(&data->lock);
+    for (int i = 0; i < data->arp_note_count; i++) {
+        if (midiNote == data->arp_notes[i]) {
+            for (int j = i; j < data->arp_note_count - 1; j++) {
+                data->arp_notes[j] = data->arp_notes[j+1];
+            }
+            data->arp_note_count--;
+            break;
+        }
+    }
+    pthread_mutex_unlock(&data->lock);
 }
