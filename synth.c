@@ -6,21 +6,26 @@
 #include <math.h>
 #include <string.h>
 
-float lowpass_filter(float input, SynthData *data) {
-    input -= data->lowpass_feedback * data->lowpass_last_sample;
-    float filtered = data->lowpass_last_sample + data->lowpass_alpha * (input - data->lowpass_last_sample);
-    data->lowpass_last_sample = filtered;
-    return filtered;
+float saturate(float input) {
+    return tanh(input);
+}
+
+float lowpass_two_stage(float input, SynthData *data) {
+    // Saturate the resonance feedback
+    float feedback = data->lowpass_resonance * saturate(data->lowpass_stage2);
+    float inputWithFeedback = input - feedback;
+    // First stage
+    data->lowpass_stage1 += data->lowpass_alpha * (inputWithFeedback - data->lowpass_stage1);
+    // Second stage
+    data->lowpass_stage2 += data->lowpass_alpha * (data->lowpass_stage1 - data->lowpass_stage2);
+
+    return data->lowpass_stage2;
 }
 
 void update_lowpass_alpha(SynthData *data) {
-    float fc =  data->lowpass_cutoff;
-    float res = data->lowpass_resonance;
+    float rc = 1.0f / (2.0f * M_PI * data->lowpass_cutoff);
     float dt = 1.0f / SAMPLE_RATE;
-
-    float x = expf(-2.0f * M_PI * fc * dt);
-    data->lowpass_alpha = 1.0f - x;
-    data->lowpass_feedback = res * (1.0f - x);
+    data->lowpass_alpha = dt / (rc + dt);
 }
 
 // TODO figure out why adding resonance broke the LP
@@ -52,6 +57,7 @@ static int audioCallback(
     // Looks like this? [ left0, right0, left1, right1, left2, right2, ... ]
     // Where each entry is a 32 bit float
     float *out = (float*)outputBuffer;
+    float amplitude;
     float freqOsc1, freqOsc2, wave1, wave2;
     float sampleOsc1, sampleOsc2;
     float mix, mixFiltered;
@@ -60,6 +66,7 @@ static int audioCallback(
 
     // Lock the mutex to safely access shared data
     pthread_mutex_lock(&data->lock);
+    amplitude = data->amplitude;
     freqOsc1 = data->osc1.frequency;  // Frequency of the first oscillator
     freqOsc2 = data->osc2.frequency;  // Frequency of the second oscillator
     wave1 = data->osc1.waveform;
@@ -68,14 +75,14 @@ static int audioCallback(
     pthread_mutex_unlock(&data->lock);
 
     for (unsigned int i = 0; i < framesPerBuffer; i++) {
-        sampleOsc1 = AMPLITUDE * generate_sample(wave1, data->osc1.phase);
-        sampleOsc2 = AMPLITUDE * generate_sample(wave2, data->osc2.phase);
+        sampleOsc1 = amplitude * generate_sample(wave1, data->osc1.phase);
+        sampleOsc2 = amplitude * generate_sample(wave2, data->osc2.phase);
 
         // Mix oscillators
         float mixedSample = (mix * sampleOsc1) + ((1.0f - mix) * sampleOsc2);
 
         // Apply filters
-        float lpFiltered = lowpass_filter(mixedSample, data);
+        float lpFiltered = lowpass_two_stage(mixedSample, data);
         mixFiltered = highpass_filter(lpFiltered, data);
 
         *out++ = mixFiltered; // left channel

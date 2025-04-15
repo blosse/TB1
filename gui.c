@@ -48,6 +48,7 @@ int run_gui(SynthData *data) {
     SetTargetFPS(60);
 
     whiteKeyStates[0] = true;
+    float localAmplitude = data->amplitude;
     float localOscMix = data->oscMix;
     float localDetune = data->osc2Detune;
     float localLPResonance = data->lowpass_resonance;
@@ -85,12 +86,19 @@ int run_gui(SynthData *data) {
             pthread_mutex_unlock(&data->lock);
         }
 
+        // Amplitude slider
+        if (GuiSlider((Rectangle){ 295, 5, SLIDER_WIDTH_SHORT, 20 }, "VOL", NULL, &localAmplitude, 0.0f, 0.3f)) {
+            pthread_mutex_lock(&data->lock);
+            data->amplitude = localAmplitude;
+            pthread_mutex_unlock(&data->lock);
+        }
+
         // Highpass filter slider
         // Convert actual cutoff frequency to log scale (range: log(20) to log(20000))
         float logMinHP = log10f(20.0f);
         float logMaxHP = log10f(20000.0f);
         float logCutoffHP = log10f(data->highpass_cutoff);
-        if (GuiSlider((Rectangle){ 295, 5, SLIDER_WIDTH_SHORT, 20 }, "HP", NULL, &logCutoffHP, logMinHP, logMaxHP)) {
+        if (GuiSlider((Rectangle){ 295, 29, SLIDER_WIDTH_SHORT, 20 }, "HP", NULL, &logCutoffHP, logMinHP, logMaxHP)) {
             pthread_mutex_lock(&data->lock);
             data->highpass_cutoff = powf(10.0f, logCutoffHP);
             update_highpass_alpha(data);
@@ -102,7 +110,7 @@ int run_gui(SynthData *data) {
         float logMinLP = log10f(20.0f);
         float logMaxLP = log10f(20000.0f);
         float logCutoffLP = log10f(data->lowpass_cutoff);
-        if (GuiSlider((Rectangle){ 295, 29, SLIDER_WIDTH_SHORT, 20 }, "LP", NULL, &logCutoffLP, logMinLP, logMaxLP)) {
+        if (GuiSlider((Rectangle){ 295, 53, SLIDER_WIDTH_SHORT, 20 }, "LP", NULL, &logCutoffLP, logMinLP, logMaxLP)) {
             pthread_mutex_lock(&data->lock);
             data->lowpass_cutoff = powf(10.0f, logCutoffLP);
             update_lowpass_alpha(data);
@@ -110,7 +118,7 @@ int run_gui(SynthData *data) {
         }
 
         // Lowpass resonance slider
-        if (GuiSlider((Rectangle){ 295, 53, SLIDER_WIDTH_SHORT, 20 }, "RES", NULL, &localLPResonance, 0.0f, 1.0f)) {
+        if (GuiSlider((Rectangle){ 295, 77, SLIDER_WIDTH_SHORT, 20 }, "RES", NULL, &localLPResonance, 0.0f, 1.5f)) {
             pthread_mutex_lock(&data->lock);
             data->lowpass_resonance = localLPResonance;
             update_lowpass_alpha(data);

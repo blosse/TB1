@@ -20,10 +20,13 @@ typedef struct {
 typedef struct {
     Oscillator osc1;
     Oscillator osc2;
+    float amplitude;
     float osc2Detune;
     float oscMix;
 
-    float lowpass_last_sample;
+    float lowpass_stage1;
+    float lowpass_stage2;
+    float lowpass_last_sample; // Not needed?
     float lowpass_alpha;
     float lowpass_cutoff;
     float lowpass_resonance;
@@ -40,9 +43,11 @@ typedef struct {
 int start_audio(SynthData *data, PaStream **stream);
 void stop_audio(PaStream *stream);
 
-float lowpass_filter(float input, SynthData *data);
+float lowpass_two_stage(float input, SynthData *data);
 void update_lowpass_alpha(SynthData *data);
 
 float highpass_filter(float input, SynthData *data);
 void update_highpass_alpha(SynthData *data);
+
+float saturate(float input);
 #endif

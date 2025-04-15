@@ -22,10 +22,13 @@ int main() {
         .osc1 = osc1,
         .osc2 = osc2,
         .osc2Detune = 0.0f,
+        .amplitude = 0.25f,
         .oscMix = 0.5f,
-        .highpass_cutoff = 20.0f,
-        .highpass_prev_input = 0.0f,
-        .highpass_prev_output = 0.0f,
+        .lowpass_cutoff = 10000.0f,
+        .lowpass_resonance = 0.0f,
+        .highpass_cutoff = 10000.0f,
+        .highpass_prev_input = 0.5f,
+        .highpass_prev_output = 0.5f,
     };
 
     PaStream *stream;
