@@ -18,7 +18,7 @@ int main() {
         .frequency = 660.0f,
         .waveform = WAVE_SINE,
     };
-    SynthData data = {
+    SynthData synthData = {
         .osc1 = osc1,
         .osc2 = osc2,
         .osc2Detune = 0.0f,
@@ -29,6 +29,15 @@ int main() {
         .highpass_cutoff = 10000.0f,
         .highpass_prev_input = 0.5f,
         .highpass_prev_output = 0.5f,
+    };
+    ArpData arpData = {
+        .arp_note_count = 0,
+        .arp_notes = { -1 },
+        .arp_interval = 0.25f,
+    };
+    AudioData data = {
+        .synthData = synthData,
+        .arpData = arpData,
     };
 
     PaStream *stream;

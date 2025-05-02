@@ -28,8 +28,7 @@ void update_lowpass_alpha(SynthData *data) {
     data->lowpass_alpha = dt / (rc + dt);
 }
 
-// TODO figure out why adding resonance broke the LP
-float highpass_filter(float input, SynthData *data) {
+float highpass_filter(SynthData *data, float input) {
     float output = data->highpass_alpha * (data->highpass_prev_output + input - data->highpass_prev_input);
     data->highpass_prev_input = input;
     data->highpass_prev_output = output;
@@ -61,48 +60,66 @@ static int audioCallback(
     float freqOsc1, freqOsc2, wave1, wave2;
     float sampleOsc1, sampleOsc2;
     float mix, mixFiltered;
+    int currentNote;
     
-    SynthData *data = (SynthData*)userData;
-
+    AudioData *audioData = (AudioData*)userData;
+    SynthData *synthData = &audioData->synthData;
+    ArpData *arpData = &audioData->arpData;
     // Lock the mutex to safely access shared data
-    pthread_mutex_lock(&data->lock);
-    amplitude = data->amplitude;
-    freqOsc1 = data->osc1.frequency;  // Frequency of the first oscillator
-    freqOsc2 = data->osc2.frequency;  // Frequency of the second oscillator
-    wave1 = data->osc1.waveform;
-    wave2 = data->osc2.waveform;
-    mix = data->oscMix;
-    pthread_mutex_unlock(&data->lock);
+    pthread_mutex_lock(&synthData->lock);
+    amplitude = synthData->amplitude;
+    wave1 = synthData->osc1.waveform;
+    wave2 = synthData->osc2.waveform;
+    mix = synthData->oscMix;
+    pthread_mutex_unlock(&synthData->lock);
 
     for (unsigned int i = 0; i < framesPerBuffer; i++) {
-        sampleOsc1 = amplitude * generate_sample(wave1, data->osc1.phase);
-        sampleOsc2 = amplitude * generate_sample(wave2, data->osc2.phase);
+        // Updating the frequency each frame now, maybe not necessary
+        // Can be improved in future if performance is an issue
+        update_arp(arpData);
+        currentNote = get_arp_note(arpData);
+        freqOsc1 = calculate_frequency(currentNote, 0);
+        freqOsc2 = calculate_frequency(currentNote, synthData->osc2Detune);
+        // if (i == 0) printf("Note: %d, OSC1: %f, OSC2: %f \n", currentNote, freqOsc1, freqOsc2);
+
+        pthread_mutex_lock(&synthData->lock);
+        synthData->osc1.frequency = freqOsc1; // Frequency of the fst oscillator
+        synthData->osc2.frequency = freqOsc2; // Frequency of the snd oscillator
+        pthread_mutex_unlock(&synthData->lock);
+
+        sampleOsc1 = amplitude * generate_sample(wave1, synthData->osc1.phase);
+        sampleOsc2 = amplitude * generate_sample(wave2, synthData->osc2.phase);
 
         // Mix oscillators
         float mixedSample = (mix * sampleOsc1) + ((1.0f - mix) * sampleOsc2);
 
         // Apply filters
-        float lpFiltered = lowpass_two_stage(mixedSample, data);
-        mixFiltered = highpass_filter(lpFiltered, data);
+        float lpFiltered = lowpass_two_stage(mixedSample, synthData);
+        mixFiltered = highpass_filter(synthData, lpFiltered);
 
         *out++ = mixFiltered; // left channel
         *out++ = mixFiltered; // right channel
         
         // Update phase
-        data->osc1.phase += (float)(TWO_PI * freqOsc1 / SAMPLE_RATE);
-        if (data->osc1.phase >= TWO_PI) data->osc1.phase -= TWO_PI;
+        synthData->osc1.phase += (float)(TWO_PI * freqOsc1 / SAMPLE_RATE);
+        if (synthData->osc1.phase >= TWO_PI) synthData->osc1.phase -= TWO_PI;
 
-        data->osc2.phase += (float)(TWO_PI * freqOsc2 / SAMPLE_RATE);
-        if (data->osc2.phase >= TWO_PI) data->osc2.phase -= TWO_PI;
+        synthData->osc2.phase += (float)(TWO_PI * freqOsc2 / SAMPLE_RATE);
+        if (synthData->osc2.phase >= TWO_PI) synthData->osc2.phase -= TWO_PI;
     }
 
     return paContinue;
 }
 
-int start_audio(SynthData *data, PaStream **stream) {
-    pthread_mutex_init(&data->lock, NULL);
-    data->lowpass_last_sample = 0.0f;
-    update_lowpass_alpha(data);
+int start_audio(AudioData *data, PaStream **stream) {
+
+    AudioData *audioData = (AudioData*)data;
+    SynthData *synthData = &audioData->synthData;
+    // ArpData *arpData = &audioData->arpData;
+
+    pthread_mutex_init(&synthData->lock, NULL);
+    synthData->lowpass_last_sample = 0.0f;
+    update_lowpass_alpha(synthData);
     Pa_Initialize();
     Pa_OpenDefaultStream(stream,
                          0,

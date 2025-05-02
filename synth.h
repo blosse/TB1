@@ -4,6 +4,7 @@
 #include <portaudio.h>
 #include <pthread.h>
 #include "waveform.h"
+#include "pitch.h"
 
 #define SAMPLE_RATE 44100
 #define AMPLITUDE 0.25
@@ -25,12 +26,6 @@ typedef struct {
     float osc2Detune;
     float oscMix;
 
-    int arp_notes[MAX_ARP_NOTES];
-    int arp_index;
-    int arp_note_count;
-    float arp_time;
-    float arp_interval;
-
     float lowpass_stage1;
     float lowpass_stage2;
     float lowpass_last_sample; // Not needed?
@@ -47,13 +42,19 @@ typedef struct {
     pthread_mutex_t lock;
 } SynthData;
 
-int start_audio(SynthData *data, PaStream **stream);
+typedef struct {
+    SynthData synthData;
+    ArpData arpData;
+} AudioData;
+
+
+int start_audio(AudioData *data, PaStream **stream);
 void stop_audio(PaStream *stream);
 
 float lowpass_two_stage(float input, SynthData *data);
 void update_lowpass_alpha(SynthData *data);
 
-float highpass_filter(float input, SynthData *data);
+float highpass_filter(SynthData *data, float input);
 void update_highpass_alpha(SynthData *data);
 
 float saturate(float input);

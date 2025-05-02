@@ -1,3 +1,3 @@
 #import "synth.h"
 
-void run_gui(SynthData *data);
+void run_gui(AudioData *data);
