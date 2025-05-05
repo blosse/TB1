@@ -16,6 +16,7 @@
 
 # User build env specific
 compile_commands.json
+.cache/
 
 # MacOS specific
 .DS_Store
