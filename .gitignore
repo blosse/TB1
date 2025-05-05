@@ -14,6 +14,9 @@
 # *.so
 # *.dylib
 
+# User build env specific
+compile_commands.json
+
 # MacOS specific
 .DS_Store
 
