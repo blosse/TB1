@@ -45,6 +45,7 @@ typedef struct {
 typedef struct {
     SynthData synthData;
     ArpData arpData;
+    EnvData envData;
 } AudioData;
 
 

@@ -12,10 +12,9 @@ float calculate_frequency(int midiNote, float detune) {
     return 440.0f * powf(2.0f, (midiNote - 69 + detune) / 12.0f);  // A4 = MIDI 69 = 440Hz
 }
 
-void update_arp(ArpData *data) {
+bool update_arp(ArpData *data) {
     if (data->arp_note_count == 0) {
-        // printf("Inside update_arp - no notes\n");
-        return;
+        return false;
     }
 
     data->arp_time += 1.0f / SAMPLE_RATE;
@@ -23,7 +22,12 @@ void update_arp(ArpData *data) {
         data->arp_time = 0.0f;
 
         data->arp_index = (data->arp_index + 1) % data->arp_note_count;
+        if (data->arp_index != data->last_note_index) {
+            data->last_note_index = data->arp_index;
+            return true;
+        }
     }
+    return false;
 }
 
 int get_arp_note(ArpData *data) {
@@ -63,3 +67,36 @@ void clear_arp_notes(ArpData *data) {
     data->arp_note_count = 0;
     pthread_mutex_unlock(&data->lock);
 }
+
+float update_envelope(EnvData *env) {
+    float dt = 1.0f / SAMPLE_RATE;
+    switch (env->stage) {
+        case 1: // Attack
+            env->currentValue += dt / env->attackTime;
+            if (env->currentValue >= 1.0f) {
+                env->currentValue = 1.0f;
+                env->stage = 2;
+            }
+            break;
+        case 2: // Decay
+            env->currentValue -= dt / env->decayTime * (1.0f - env->sustainLevel);
+            if (env->currentValue <= env->sustainLevel) {
+                env->currentValue = env->sustainLevel;
+                env->stage = 3;
+            }
+            break;
+        case 3: // Sustain
+            // Hold value
+            break;
+        case 4: // Release
+            env->currentValue -= dt / env->releaseTime * env->currentValue;
+            if (env->currentValue <= 0.0f) {
+                env->currentValue = 0.0f;
+                env->stage = 0; // Idle
+            }
+            break;
+    }
+    return env->currentValue;
+}
+
+
