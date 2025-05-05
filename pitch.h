@@ -42,6 +42,7 @@ typedef struct {
     float currentValue;
     float elapsedTime;
     int stage; // 0 = idle, 1 = attack, 2 = decay, 3 = sustain, 4 = release
+    pthread_mutex_t lock;
 } EnvData;
 
 float calculate_frequency(int midiNote, float detune);
