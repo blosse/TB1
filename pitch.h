@@ -56,4 +56,4 @@ int get_arp_note(ArpData *data);
 
 // Envelope stuff
 float update_envelope(EnvData *env);
-
+void reset_envelope_stage(EnvData *env);

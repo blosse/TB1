@@ -170,9 +170,10 @@ int run_gui(AudioData *data) {
                     if (whiteKeyStates[i]) {
                         memset(whiteKeyStates, 0, sizeof(whiteKeyStates));
                         memset(blackKeyStates, 0, sizeof(blackKeyStates));
-                        clear_arp_notes(arpData);
                         whiteKeyStates[i] = true;
                         int midiNote = BASE_NOTE + whiteOffsets[i];
+                        clear_arp_notes(arpData);
+                        reset_envelope_stage(envData);
                         add_arp_note(arpData, midiNote);
                     }
                     break;
@@ -200,9 +201,10 @@ int run_gui(AudioData *data) {
                     if (blackKeyStates[i]) {
                         memset(whiteKeyStates, 0, sizeof(whiteKeyStates));
                         memset(blackKeyStates, 0, sizeof(blackKeyStates));
-                        clear_arp_notes(arpData);
                         blackKeyStates[i] = true;
                         int midiNote = BASE_NOTE + blackOffsets[i];
+                        clear_arp_notes(arpData);
+                        reset_envelope_stage(envData);
                         add_arp_note(arpData, midiNote);
                     }
                     break;

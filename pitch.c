@@ -99,4 +99,10 @@ float update_envelope(EnvData *env) {
     return env->currentValue;
 }
 
+void reset_envelope_stage(EnvData *env) {
+    pthread_mutex_lock(&env->lock);
+    env->stage = 1;
+    pthread_mutex_unlock(&env->lock);
+}
+
 
