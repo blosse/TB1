@@ -26,7 +26,7 @@ int main() {
         .oscMix = 0.5f,
         .lowpass_cutoff = 10000.0f,
         .lowpass_resonance = 0.0f,
-        .highpass_cutoff = 10000.0f,
+        .highpass_cutoff = 200.0f,
         .highpass_prev_input = 0.5f,
         .highpass_prev_output = 0.5f,
     };
@@ -35,9 +35,17 @@ int main() {
         .arp_notes = { -1 },
         .arp_interval = 0.25f,
     };
+    EnvData envData = {
+        .attackTime = 0.5f,
+        .decayTime = 0.5f,
+        .sustainLevel = 0.8f,
+        .releaseTime = 0.5f,
+        .stage = 0,
+    };
     AudioData data = {
         .synthData = synthData,
         .arpData = arpData,
+        .envData = envData,
     };
 
     PaStream *stream;

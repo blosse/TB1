@@ -51,12 +51,16 @@ int run_gui(AudioData *data) {
 
     SynthData *synthData = &data->synthData;
     ArpData *arpData = &data->arpData;
+    EnvData *envData = &data->envData;
 
-    // whiteKeyStates[0] = true;
     float localAmplitude = synthData->amplitude;
     float localOscMix = synthData->oscMix;
     float localDetune = synthData->osc2Detune;
     float localLPResonance = synthData->lowpass_resonance;
+    float localAttackTime = envData->attackTime;
+    float localDecayTime = envData->decayTime;
+    float localSustainLevel = envData->sustainLevel;
+    float localReleaseTime = envData->releaseTime;
 
     while (!WindowShouldClose()) {
         BeginDrawing();
@@ -136,6 +140,28 @@ int run_gui(AudioData *data) {
             pthread_mutex_unlock(&arpData->lock);
         }
 
+        // Envelope sliders
+        if (GuiSlider((Rectangle){ 53, 53, SLIDER_WIDTH_SHORT, 20 }, "ATCK", NULL, &localAttackTime, 0.0f, 1.0f)) {
+            pthread_mutex_lock(&envData->lock);
+            envData->attackTime = localAttackTime;
+            pthread_mutex_unlock(&envData->lock);
+        }
+
+        if (GuiSlider((Rectangle){ 53, 77, SLIDER_WIDTH_SHORT, 20 }, "DECY", NULL, &localDecayTime, 0.0f, 1.0f)) {
+            pthread_mutex_lock(&envData->lock);
+            envData->decayTime = localDecayTime;
+            pthread_mutex_unlock(&envData->lock);
+        }
+        if (GuiSlider((Rectangle){ 53, 101, SLIDER_WIDTH_SHORT, 20 }, "SUST", NULL, &localSustainLevel, 0.0f, 1.0f)) {
+            pthread_mutex_lock(&envData->lock);
+            envData->sustainLevel = localSustainLevel;
+            pthread_mutex_unlock(&envData->lock);
+        }
+        if (GuiSlider((Rectangle){ 53, 125, SLIDER_WIDTH_SHORT, 20 }, "RELE", NULL, &localReleaseTime, 0.0f, 1.0f)) {
+            pthread_mutex_lock(&envData->lock);
+            envData->releaseTime = localReleaseTime;
+            pthread_mutex_unlock(&envData->lock);
+        }
         // Draw white keys
         for (int i = 0; i < NUM_WHITE_KEYS; i++) {
             GuiToggle(whiteKeyRects[i], NULL, &whiteKeyStates[i]);
@@ -144,9 +170,10 @@ int run_gui(AudioData *data) {
                     if (whiteKeyStates[i]) {
                         memset(whiteKeyStates, 0, sizeof(whiteKeyStates));
                         memset(blackKeyStates, 0, sizeof(blackKeyStates));
-                        clear_arp_notes(arpData);
                         whiteKeyStates[i] = true;
                         int midiNote = BASE_NOTE + whiteOffsets[i];
+                        clear_arp_notes(arpData);
+                        reset_envelope_stage(envData);
                         add_arp_note(arpData, midiNote);
                     }
                     break;
@@ -174,9 +201,10 @@ int run_gui(AudioData *data) {
                     if (blackKeyStates[i]) {
                         memset(whiteKeyStates, 0, sizeof(whiteKeyStates));
                         memset(blackKeyStates, 0, sizeof(blackKeyStates));
-                        clear_arp_notes(arpData);
                         blackKeyStates[i] = true;
                         int midiNote = BASE_NOTE + blackOffsets[i];
+                        clear_arp_notes(arpData);
+                        reset_envelope_stage(envData);
                         add_arp_note(arpData, midiNote);
                     }
                     break;

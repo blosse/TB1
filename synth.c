@@ -18,7 +18,6 @@ float lowpass_two_stage(float input, SynthData *data) {
     data->lowpass_stage1 += data->lowpass_alpha * (inputWithFeedback - data->lowpass_stage1);
     // Second stage
     data->lowpass_stage2 += data->lowpass_alpha * (data->lowpass_stage1 - data->lowpass_stage2);
-
     return data->lowpass_stage2;
 }
 
@@ -60,11 +59,13 @@ static int audioCallback(
     float freqOsc1, freqOsc2, wave1, wave2;
     float sampleOsc1, sampleOsc2;
     float mix, mixFiltered;
+    float env;
     int currentNote;
-    
+
     AudioData *audioData = (AudioData*)userData;
     SynthData *synthData = &audioData->synthData;
     ArpData *arpData = &audioData->arpData;
+    EnvData *envData = &audioData->envData;
     // Lock the mutex to safely access shared data
     pthread_mutex_lock(&synthData->lock);
     amplitude = synthData->amplitude;
@@ -75,20 +76,23 @@ static int audioCallback(
 
     for (unsigned int i = 0; i < framesPerBuffer; i++) {
         // Updating the frequency each frame now, maybe not necessary
-        // Can be improved in future if performance is an issue
-        update_arp(arpData);
+        // Can be changed in future if performance is an issue
+        if (update_arp(arpData)) {
+            envData->stage = 1;
+            envData->currentValue = 0.0f;
+        }
+        env = update_envelope(envData);
         currentNote = get_arp_note(arpData);
         freqOsc1 = calculate_frequency(currentNote, 0);
         freqOsc2 = calculate_frequency(currentNote, synthData->osc2Detune);
-        // if (i == 0) printf("Note: %d, OSC1: %f, OSC2: %f \n", currentNote, freqOsc1, freqOsc2);
 
         pthread_mutex_lock(&synthData->lock);
         synthData->osc1.frequency = freqOsc1; // Frequency of the fst oscillator
         synthData->osc2.frequency = freqOsc2; // Frequency of the snd oscillator
         pthread_mutex_unlock(&synthData->lock);
 
-        sampleOsc1 = amplitude * generate_sample(wave1, synthData->osc1.phase);
-        sampleOsc2 = amplitude * generate_sample(wave2, synthData->osc2.phase);
+        sampleOsc1 = amplitude * env * generate_sample(wave1, synthData->osc1.phase);
+        sampleOsc2 = amplitude * env * generate_sample(wave2, synthData->osc2.phase);
 
         // Mix oscillators
         float mixedSample = (mix * sampleOsc1) + ((1.0f - mix) * sampleOsc2);
@@ -99,7 +103,7 @@ static int audioCallback(
 
         *out++ = mixFiltered; // left channel
         *out++ = mixFiltered; // right channel
-        
+
         // Update phase
         synthData->osc1.phase += (float)(TWO_PI * freqOsc1 / SAMPLE_RATE);
         if (synthData->osc1.phase >= TWO_PI) synthData->osc1.phase -= TWO_PI;
