@@ -8,8 +8,8 @@
 
 #define WINDOW_WIDTH 400
 #define WINDOW_HEIGHT 250
-#define SLIDER_WIDTH_LONG (WINDOW_WIDTH / 2)
-#define SLIDER_WIDTH_SHORT 100
+#define SLIDER_WIDTH_LONG 100
+#define SLIDER_WIDTH_SHORT 48
 #define SLIDER_HEIGHT 20
 #define BUTTON_WIDTH 40
 #define BUTTON_HEIGHT 20
@@ -66,28 +66,28 @@ int run_gui(AudioData *data) {
         BeginDrawing();
         ClearBackground(GetColor(0xfff5e1ff));
         // OSC1 Waveform selector
-        if (GuiButton((Rectangle){ 5, 5, BUTTON_WIDTH, BUTTON_HEIGHT }, waveNames[synthData->osc1.waveform])) {
+        if (GuiButton((Rectangle){ 158, 5, BUTTON_WIDTH, BUTTON_HEIGHT }, waveNames[synthData->osc1.waveform])) {
             pthread_mutex_lock(&synthData->lock);
             synthData->osc1.waveform = (synthData->osc1.waveform + 1) % NUM_WAVEFORMS;
             pthread_mutex_unlock(&synthData->lock);
         }
         
         // OSC2 Waveform selector
-        if (GuiButton((Rectangle){ 5, 29, BUTTON_WIDTH, BUTTON_HEIGHT }, waveNames[synthData->osc2.waveform])) {
+        if (GuiButton((Rectangle){ 8, 5, BUTTON_WIDTH, BUTTON_HEIGHT }, waveNames[synthData->osc2.waveform])) {
             pthread_mutex_lock(&synthData->lock);
             synthData->osc2.waveform = (synthData->osc2.waveform + 1) % NUM_WAVEFORMS;
             pthread_mutex_unlock(&synthData->lock);
         }
 
         // Oscillator mix slider
-        if (GuiSlider((Rectangle){ 53, 5, SLIDER_WIDTH_SHORT, SLIDER_HEIGHT }, NULL, "OSC MIX", &localOscMix, 0.0f, 1.0f)) {
+        if (GuiSlider((Rectangle){ 53, 5, SLIDER_WIDTH_LONG, SLIDER_HEIGHT }, NULL, NULL, &localOscMix, 0.0f, 1.0f)) {
             // If user moved slider, update shared synth frequency
             pthread_mutex_lock(&synthData->lock);
             synthData->oscMix = localOscMix;
             pthread_mutex_unlock(&synthData->lock);
         }
         // Detune slider
-        if (GuiSlider((Rectangle){ 53, 29, SLIDER_WIDTH_SHORT, SLIDER_HEIGHT }, NULL, "DETUNE", &localDetune, -12.0f, 12.0f)) {
+        if (GuiSlider((Rectangle){ 53, 29, SLIDER_WIDTH_LONG, SLIDER_HEIGHT }, "DETUNE", NULL, &localDetune, -12.0f, 12.0f)) {
             // If user moved slider, update shared synth frequency
             pthread_mutex_lock(&synthData->lock);
             synthData->osc2Detune = localDetune;
@@ -95,7 +95,7 @@ int run_gui(AudioData *data) {
         }
 
         // Amplitude slider
-        if (GuiSlider((Rectangle){ 295, 5, SLIDER_WIDTH_SHORT, 20 }, "VOL", NULL, &localAmplitude, 0.0f, 0.3f)) {
+        if (GuiSlider((Rectangle){ 247, 5, SLIDER_WIDTH_SHORT, 20 }, "VOL", NULL, &localAmplitude, 0.0f, 0.3f)) {
             pthread_mutex_lock(&synthData->lock);
             synthData->amplitude = localAmplitude;
             pthread_mutex_unlock(&synthData->lock);
@@ -106,7 +106,7 @@ int run_gui(AudioData *data) {
         float logMinHP = log10f(20.0f);
         float logMaxHP = log10f(20000.0f);
         float logCutoffHP = log10f(synthData->highpass_cutoff);
-        if (GuiSlider((Rectangle){ 295, 29, SLIDER_WIDTH_SHORT, 20 }, "HP", NULL, &logCutoffHP, logMinHP, logMaxHP)) {
+        if (GuiSlider((Rectangle){ 299, 5, SLIDER_WIDTH_SHORT, 20 }, NULL, "HP", &logCutoffHP, logMinHP, logMaxHP)) {
             pthread_mutex_lock(&synthData->lock);
             synthData->highpass_cutoff = powf(10.0f, logCutoffHP);
             update_highpass_alpha(synthData);
@@ -118,7 +118,7 @@ int run_gui(AudioData *data) {
         float logMinLP = log10f(20.0f);
         float logMaxLP = log10f(20000.0f);
         float logCutoffLP = log10f(synthData->lowpass_cutoff);
-        if (GuiSlider((Rectangle){ 295, 53, SLIDER_WIDTH_SHORT, 20 }, "LP", NULL, &logCutoffLP, logMinLP, logMaxLP)) {
+        if (GuiSlider((Rectangle){ 247, 29, SLIDER_WIDTH_LONG, 20 }, "LP", NULL, &logCutoffLP, logMinLP, logMaxLP)) {
             pthread_mutex_lock(&synthData->lock);
             synthData->lowpass_cutoff = powf(10.0f, logCutoffLP);
             update_lowpass_alpha(synthData);
@@ -126,7 +126,7 @@ int run_gui(AudioData *data) {
         }
 
         // Lowpass resonance slider
-        if (GuiSlider((Rectangle){ 295, 77, SLIDER_WIDTH_SHORT, 20 }, "RES", NULL, &localLPResonance, 0.0f, 1.5f)) {
+        if (GuiSlider((Rectangle){ 247, 53, SLIDER_WIDTH_LONG, 20 }, "RES", NULL, &localLPResonance, 0.0f, 1.5f)) {
             pthread_mutex_lock(&synthData->lock);
             synthData->lowpass_resonance = localLPResonance;
             update_lowpass_alpha(synthData);
@@ -141,23 +141,23 @@ int run_gui(AudioData *data) {
         }
 
         // Envelope sliders
-        if (GuiSlider((Rectangle){ 53, 53, SLIDER_WIDTH_SHORT, 20 }, "ATCK", NULL, &localAttackTime, 0.0f, 1.0f)) {
+        if (GuiSlider((Rectangle){ 53, 53, SLIDER_WIDTH_LONG, 20 }, "ATCK", NULL, &localAttackTime, 0.0f, 1.0f)) {
             pthread_mutex_lock(&envData->lock);
             envData->attackTime = localAttackTime;
             pthread_mutex_unlock(&envData->lock);
         }
 
-        if (GuiSlider((Rectangle){ 53, 77, SLIDER_WIDTH_SHORT, 20 }, "DECY", NULL, &localDecayTime, 0.0f, 1.0f)) {
+        if (GuiSlider((Rectangle){ 53, 77, SLIDER_WIDTH_LONG, 20 }, "DECY", NULL, &localDecayTime, 0.0f, 1.0f)) {
             pthread_mutex_lock(&envData->lock);
             envData->decayTime = localDecayTime;
             pthread_mutex_unlock(&envData->lock);
         }
-        if (GuiSlider((Rectangle){ 53, 101, SLIDER_WIDTH_SHORT, 20 }, "SUST", NULL, &localSustainLevel, 0.0f, 1.0f)) {
+        if (GuiSlider((Rectangle){ 53, 101, SLIDER_WIDTH_LONG, 20 }, "SUST", NULL, &localSustainLevel, 0.0f, 1.0f)) {
             pthread_mutex_lock(&envData->lock);
             envData->sustainLevel = localSustainLevel;
             pthread_mutex_unlock(&envData->lock);
         }
-        if (GuiSlider((Rectangle){ 53, 125, SLIDER_WIDTH_SHORT, 20 }, "RELE", NULL, &localReleaseTime, 0.0f, 1.0f)) {
+        if (GuiSlider((Rectangle){ 53, 125, SLIDER_WIDTH_LONG, 20 }, "RELE", NULL, &localReleaseTime, 0.0f, 1.0f)) {
             pthread_mutex_lock(&envData->lock);
             envData->releaseTime = localReleaseTime;
             pthread_mutex_unlock(&envData->lock);
