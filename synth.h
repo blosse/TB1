@@ -22,9 +22,11 @@ typedef struct {
 typedef struct {
     Oscillator osc1;
     Oscillator osc2;
+    Oscillator oscSub;
     float amplitude;
     float osc2Detune;
     float oscMix;
+    float subMix;
 
     float lowpass_stage1;
     float lowpass_stage2;

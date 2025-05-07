@@ -18,9 +18,15 @@ int main() {
         .frequency = 660.0f,
         .waveform = WAVE_SINE,
     };
+    Oscillator oscSub = {
+        .phase = 0.0f,
+        .frequency = 220.f,
+        .waveform = WAVE_SINE,
+    };
     SynthData synthData = {
         .osc1 = osc1,
         .osc2 = osc2,
+        .oscSub = oscSub,
         .osc2Detune = 0.0f,
         .amplitude = 0.25f,
         .oscMix = 0.5f,

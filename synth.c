@@ -56,9 +56,9 @@ static int audioCallback(
     // Where each entry is a 32 bit float
     float *out = (float*)outputBuffer;
     float amplitude;
-    float freqOsc1, freqOsc2, wave1, wave2;
-    float sampleOsc1, sampleOsc2;
-    float mix, mixFiltered;
+    float freqOsc1, freqOsc2, freqOscSub, wave1, wave2, waveSub;
+    float sampleOsc1, sampleOsc2, sampleOscSub ;
+    float mix, mixSub, mixFiltered;
     float env;
     int currentNote;
 
@@ -71,7 +71,9 @@ static int audioCallback(
     amplitude = synthData->amplitude;
     wave1 = synthData->osc1.waveform;
     wave2 = synthData->osc2.waveform;
+    waveSub = synthData->oscSub.waveform;
     mix = synthData->oscMix;
+    mixSub = synthData->subMix;
     pthread_mutex_unlock(&synthData->lock);
 
     for (unsigned int i = 0; i < framesPerBuffer; i++) {
@@ -85,17 +87,20 @@ static int audioCallback(
         currentNote = get_arp_note(arpData);
         freqOsc1 = calculate_frequency(currentNote, 0);
         freqOsc2 = calculate_frequency(currentNote, synthData->osc2Detune);
+        freqOscSub = calculate_frequency(currentNote - 12, 0); // Should have some check here so that note > 0
 
         pthread_mutex_lock(&synthData->lock);
         synthData->osc1.frequency = freqOsc1; // Frequency of the fst oscillator
         synthData->osc2.frequency = freqOsc2; // Frequency of the snd oscillator
+        synthData->oscSub.frequency = freqOscSub; // Frequency of the sub oscillator
         pthread_mutex_unlock(&synthData->lock);
 
         sampleOsc1 = amplitude * env * generate_sample(wave1, synthData->osc1.phase);
         sampleOsc2 = amplitude * env * generate_sample(wave2, synthData->osc2.phase);
+        sampleOscSub = amplitude * env * generate_sample(waveSub, synthData->oscSub.phase);
 
         // Mix oscillators
-        float mixedSample = (mix * sampleOsc1) + ((1.0f - mix) * sampleOsc2);
+        float mixedSample = (mix * sampleOsc1) + ((1.0f - mix) * sampleOsc2) + (mixSub * sampleOscSub);
 
         // Apply filters
         float lpFiltered = lowpass_two_stage(mixedSample, synthData);
@@ -110,6 +115,9 @@ static int audioCallback(
 
         synthData->osc2.phase += (float)(TWO_PI * freqOsc2 / SAMPLE_RATE);
         if (synthData->osc2.phase >= TWO_PI) synthData->osc2.phase -= TWO_PI;
+
+        synthData->oscSub.phase += (float)(TWO_PI * freqOscSub / SAMPLE_RATE);
+        if (synthData->oscSub.phase >= TWO_PI) synthData->oscSub.phase -= TWO_PI;
     }
 
     return paContinue;

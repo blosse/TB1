@@ -55,6 +55,7 @@ int run_gui(AudioData *data) {
 
     float localAmplitude = synthData->amplitude;
     float localOscMix = synthData->oscMix;
+    float localSubMix = synthData->subMix;
     float localDetune = synthData->osc2Detune;
     float localLPResonance = synthData->lowpass_resonance;
     float localAttackTime = envData->attackTime;
@@ -87,7 +88,7 @@ int run_gui(AudioData *data) {
             pthread_mutex_unlock(&synthData->lock);
         }
         // Detune slider
-        if (GuiSlider((Rectangle){ 53, 29, SLIDER_WIDTH_LONG, SLIDER_HEIGHT }, "DETUNE", NULL, &localDetune, -12.0f, 12.0f)) {
+        if (GuiSlider((Rectangle){ 105, 29, SLIDER_WIDTH_SHORT, SLIDER_HEIGHT }, NULL, "DETUNE", &localDetune, -12.0f, 12.0f)) {
             // If user moved slider, update shared synth frequency
             pthread_mutex_lock(&synthData->lock);
             synthData->osc2Detune = localDetune;
@@ -98,6 +99,13 @@ int run_gui(AudioData *data) {
         if (GuiSlider((Rectangle){ 247, 5, SLIDER_WIDTH_SHORT, 20 }, "VOL", NULL, &localAmplitude, 0.0f, 0.3f)) {
             pthread_mutex_lock(&synthData->lock);
             synthData->amplitude = localAmplitude;
+            pthread_mutex_unlock(&synthData->lock);
+        }
+
+        // Sub mix slider
+        if (GuiSlider((Rectangle){ 53, 29, SLIDER_WIDTH_SHORT, 20 }, "SUB", NULL, &localSubMix, 0.0f, 1.0f)) {
+            pthread_mutex_lock(&synthData->lock);
+            synthData->subMix = localSubMix;
             pthread_mutex_unlock(&synthData->lock);
         }
 
