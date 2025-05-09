@@ -5,6 +5,7 @@
 #include "gui.h"
 #include "synth.h"
 #include "waveform.h"
+#include "math.h"
 
 int main() {
 
@@ -32,7 +33,7 @@ int main() {
         .oscMix = 0.5f,
         .lowpass_cutoff = 10000.0f,
         .lowpass_resonance = 0.0f,
-        .highpass_cutoff = 200.0f,
+        .highpass_cutoff = log10f(200.0f),
         .highpass_prev_input = 0.5f,
         .highpass_prev_output = 0.5f,
     };
