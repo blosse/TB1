@@ -87,7 +87,7 @@ static int audioCallback(
         currentNote = get_arp_note(arpData);
         freqOsc1 = calculate_frequency(currentNote, 0);
         freqOsc2 = calculate_frequency(currentNote, synthData->osc2Detune);
-        freqOscSub = calculate_frequency(currentNote - 12, 0); // Should have some check here so that note > 0
+        freqOscSub = calculate_frequency(currentNote - 24, 0); // Should have some check here so that note > 0
 
         pthread_mutex_lock(&synthData->lock);
         synthData->osc1.frequency = freqOsc1; // Frequency of the fst oscillator
