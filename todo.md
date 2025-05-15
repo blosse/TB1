@@ -1,5 +1,5 @@
 # TB1 - Task list
-This document is intended to track feature expansions and bugfixes for the TB1 project.
+Feature expansions and bugfixes for the TB1 project are tracked in this document
 
 ## Feature Expansions
 List of features that should be added or expanded upon.
@@ -19,17 +19,41 @@ Notes played only when the mouse is clicking them, rather than toggling.
 ### Polyphonic mode
 Add a mode for polyphonic playing.
 
-### ARP modes
+### Arp modes
 Currently notes are being played in the order they have been selected. The following modes should be added:
 - Up
 - Down
 - Up/Down
 - Random (?)
 
+### Add clipping/drive/saturation
+There is some saturation at the filter stage(?) currently. Add some saturation control to add some harmonics to the tone of the synth.
+
+### Delay effect
+Add delay effect.
+
+### In Progress - Hold control for note length in arp mode
+Add some way to control the note length while in arp mode. Currently notes are held until the note switches.
+This makes the release section of the envelope useless.
+
+### Arp tempo
+Add tempo control to the arp.
+
+## Improvments and reworks
+List of reworks of existing functionallity to improve upon it
+
+### Rework signal processing flow
+The signal 'flow' from oscillator via pitch and envelope to the filters could be reworked.
+It is somewhat convoluted at the momement and not modular.
+
 ## Bugs
 List of known bugs that need to be addressed.
 
 ### Resonance is barely noticable
 Confirm that resonance is working as intended. Currently there is a barely noticable change when moving the resonance slider.
+
+### Envelope release isn't working properly
+In single note mode, notes should "ring out" after being swithed off. This is not the current behavior.
+This also affects arp mode but this should be addressed by the hold control feature.
 
 
