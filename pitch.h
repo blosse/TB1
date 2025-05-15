@@ -9,6 +9,8 @@
 #define SAMPLE_RATE 44100
 #define NUM_PLAYBACK_MODES 2
 
+typedef void (*ArpNoteCallback)(int midiNote, void *userData);
+
 typedef struct {
     int arp_notes[MAX_ARP_NOTES];
     int arp_index;
@@ -19,6 +21,9 @@ typedef struct {
     int playback_mode;
     int last_note_index;
     pthread_mutex_t lock;
+
+    ArpNoteCallback callback;
+    void *callbackUserData;
 } ArpData;
 
 enum playback_mode {
@@ -51,12 +56,13 @@ typedef struct {
 float calculate_frequency(int midiNote, float detune);
 
 // Arp stuff
-int update_arp(ArpData *data);
+void update_arp(ArpData *data);
 void add_arp_note(ArpData *data, int midiNote);
 void remove_arp_note(ArpData *data, int midiNote);
 void clear_arp_notes(ArpData *data);
 int get_arp_note(ArpData *data);
+void arp_set_callback(ArpData *data, ArpNoteCallback cb, void *userData);
 
 // Envelope stuff
 float update_envelope(EnvData *env);
-void reset_envelope_stage(EnvData *env);
+void trigger_envelope(EnvData *env);

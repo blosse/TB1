@@ -2,6 +2,7 @@
 
 
 #include "synth.h"
+#include "pitch.h"
 #include <stdio.h>
 #include <math.h>
 #include <string.h>
@@ -40,6 +41,29 @@ void update_highpass_alpha(SynthData *data) {
     data->highpass_alpha = rc / (rc + dt);
 }
 
+void on_new_arp_note(int midiNote, void *data) {
+    AudioData *audioData = (AudioData*)data;
+    SynthData *synthData = &audioData->synthData;
+    EnvData *envData = &audioData->envData;
+    update_oscillator_frequencies(synthData, midiNote);
+    trigger_envelope(envData);
+}
+
+void update_oscillator_frequencies(SynthData *synthData, int midiNote) {
+    if (midiNote <= 0) {
+        return;
+    };
+    float freqOsc1 = 440.0f * powf(2.0f, (midiNote - 69) / 12.0f); // A4 = MIDI 69 = 440Hz
+    float freqOsc2 = 440.0f * powf(2.0f, (midiNote - 69 + synthData->osc2Detune) / 12.0f);
+    float freqOscSub = 440.0f * powf(2.0f, (midiNote - 69 - 24) / 12.0f); // Sub is 2 octaves below osc1
+
+    pthread_mutex_lock(&synthData->lock);
+    synthData->osc1.frequency = freqOsc1; // Frequency of the fst oscillator
+    synthData->osc2.frequency = freqOsc2; // Frequency of the snd oscillator
+    synthData->oscSub.frequency = freqOscSub; // Frequency of the sub oscillator
+    pthread_mutex_unlock(&synthData->lock);
+}
+
 static int audioCallback(
     const void *inputBuffer, void *outputBuffer,
     unsigned long framesPerBuffer,
@@ -56,12 +80,10 @@ static int audioCallback(
     // Where each entry is a 32 bit float
     float *out = (float*)outputBuffer;
     float amplitude;
-    float freqOsc1, freqOsc2, freqOscSub, wave1, wave2, waveSub;
+    float wave1, wave2, waveSub;
     float sampleOsc1, sampleOsc2, sampleOscSub ;
     float mix, mixSub, mixFiltered;
     float env;
-    int currentNote;
-    int prevNote = 0;
 
     AudioData *audioData = (AudioData*)userData;
     SynthData *synthData = &audioData->synthData;
@@ -80,24 +102,20 @@ static int audioCallback(
     for (unsigned int i = 0; i < framesPerBuffer; i++) {
         // Updating the frequency each frame now, maybe not necessary
         // Can be changed in future if performance is an issue
-        prevNote = currentNote;
-        currentNote = update_arp(arpData);
-        // This will not really work with single note mode
-        // Repeated notes will not trigger envelope
-        if (prevNote != currentNote) {
-            reset_envelope_stage(envData);
-        }
+        update_arp(arpData);
         env = update_envelope(envData);
-        freqOsc1 = calculate_frequency(currentNote, 0);
-        freqOsc2 = calculate_frequency(currentNote, synthData->osc2Detune);
-        freqOscSub = calculate_frequency(currentNote - 24, 0); // Should have some check here so that note > 0
+        // if (arpData->arp_mode == ARP) {
+        //     currentNote = get_arp_note(arpData);
+        //     freqOsc1 = calculate_frequency(currentNote, 0);
+        //     freqOsc2 = calculate_frequency(currentNote, synthData->osc2Detune);
+        //     freqOscSub = calculate_frequency(currentNote - 24, 0); // Should have some check here so that note > 0
 
-        pthread_mutex_lock(&synthData->lock);
-        synthData->osc1.frequency = freqOsc1; // Frequency of the fst oscillator
-        synthData->osc2.frequency = freqOsc2; // Frequency of the snd oscillator
-        synthData->oscSub.frequency = freqOscSub; // Frequency of the sub oscillator
-        pthread_mutex_unlock(&synthData->lock);
-
+        //     pthread_mutex_lock(&synthData->lock);
+        //     synthData->osc1.frequency = freqOsc1; // Frequency of the fst oscillator
+        //     synthData->osc2.frequency = freqOsc2; // Frequency of the snd oscillator
+        //     synthData->oscSub.frequency = freqOscSub; // Frequency of the sub oscillator
+        //     pthread_mutex_unlock(&synthData->lock);
+        // }
         sampleOsc1 = amplitude * env * generate_sample(wave1, synthData->osc1.phase);
         sampleOsc2 = amplitude * env * generate_sample(wave2, synthData->osc2.phase);
         sampleOscSub = amplitude * env * generate_sample(waveSub, synthData->oscSub.phase);
@@ -113,13 +131,13 @@ static int audioCallback(
         *out++ = mixFiltered; // right channel
 
         // Update phase
-        synthData->osc1.phase += (float)(TWO_PI * freqOsc1 / SAMPLE_RATE);
+        synthData->osc1.phase += (float)(TWO_PI * synthData->osc1.frequency / SAMPLE_RATE);
         if (synthData->osc1.phase >= TWO_PI) synthData->osc1.phase -= TWO_PI;
 
-        synthData->osc2.phase += (float)(TWO_PI * freqOsc2 / SAMPLE_RATE);
+        synthData->osc2.phase += (float)(TWO_PI * synthData->osc2.frequency / SAMPLE_RATE);
         if (synthData->osc2.phase >= TWO_PI) synthData->osc2.phase -= TWO_PI;
 
-        synthData->oscSub.phase += (float)(TWO_PI * freqOscSub / SAMPLE_RATE);
+        synthData->oscSub.phase += (float)(TWO_PI * synthData->oscSub.frequency / SAMPLE_RATE);
         if (synthData->oscSub.phase >= TWO_PI) synthData->oscSub.phase -= TWO_PI;
     }
 

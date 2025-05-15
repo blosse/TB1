@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include "gui.h"
+#include "pitch.h"
 #include "synth.h"
 #include "waveform.h"
 #include "math.h"
@@ -54,6 +55,8 @@ int main() {
         .arpData = arpData,
         .envData = envData,
     };
+
+    arp_set_callback(&data.arpData, on_new_arp_note, &data);
 
     PaStream *stream;
     if (start_audio(&data, &stream) != paNoError) {

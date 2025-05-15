@@ -19,23 +19,32 @@ float calculate_frequency(int midiNote, float detune) {
 
 // Updates the arp index and returns the current note to be played
 // This function should maybe trigger envelope?
-int update_arp(ArpData *data) {
-    if (data->arp_note_count == 0) {
-        return 0;
-    }
+void update_arp(ArpData *data) {
+    if (data->arp_note_count == 0) return;
+
     data->arp_time += 1.0f / SAMPLE_RATE;
     if (data->arp_time >= data->arp_interval) {
         data->arp_time = 0.0f;
-
         data->arp_index = (data->arp_index + 1) % data->arp_note_count;
-    }
-    return data->arp_notes[data->arp_index];
-}
 
-// int arp_trigger_note(ArpData *arpData, EnvData *envData, SynthData *
+        // Fire callback when new note is played
+        // Callback updates oscillator freqs
+        // and triggers envelope
+        if (data->callback) {
+            int note = data->arp_notes[data->arp_index];
+            data->callback(note, data->callbackUserData);
+        }
+    }
+    return;
+}
 
 int get_arp_note(ArpData *data) {
     return data->arp_notes[data->arp_index];
+}
+
+void arp_set_callback(ArpData *data, ArpNoteCallback cb, void *userData) {
+    data->callback = cb;
+    data->callbackUserData = userData;
 }
 
 void add_arp_note(ArpData *data, int midiNote) {
@@ -108,11 +117,9 @@ float update_envelope(EnvData *env) {
     return env->currentValue;
 }
 
-void reset_envelope_stage(EnvData *env) {
+void trigger_envelope(EnvData *env) {
     pthread_mutex_lock(&env->lock);
     env->stage = 1;
     env->currentHoldValue = 0.0f;
     pthread_mutex_unlock(&env->lock);
 }
-
-

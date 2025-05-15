@@ -53,6 +53,9 @@ typedef struct {
 int start_audio(AudioData *data, PaStream **stream);
 void stop_audio(PaStream *stream);
 
+void on_new_arp_note(int midiNote, void *data);
+void update_oscillator_frequencies(SynthData *synthData, int midiNote);
+
 float lowpass_two_stage(float input, SynthData *data);
 void update_lowpass_alpha(SynthData *data);
 

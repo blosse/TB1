@@ -191,8 +191,8 @@ int run_gui(AudioData *data) {
                         whiteKeyStates[i] = true;
                         int midiNote = BASE_NOTE + whiteOffsets[i];
                         clear_arp_notes(arpData);
-                        reset_envelope_stage(envData);
                         add_arp_note(arpData, midiNote);
+                        trigger_envelope(envData);
                     }
                     break;
 
@@ -222,7 +222,7 @@ int run_gui(AudioData *data) {
                         blackKeyStates[i] = true;
                         int midiNote = BASE_NOTE + blackOffsets[i];
                         clear_arp_notes(arpData);
-                        reset_envelope_stage(envData);
+                        trigger_envelope(envData);
                         add_arp_note(arpData, midiNote);
                     }
                     break;
