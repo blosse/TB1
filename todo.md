@@ -39,6 +39,8 @@ This makes the release section of the envelope useless.
 ### Arp tempo
 Add tempo control to the arp.
 
+### LFO
+Implement a LFO to control the filter or resonance.
 ## Improvments and reworks
 List of reworks of existing functionallity to improve upon it
 
