@@ -1,6 +1,7 @@
 #include <math.h>
 #include <stdio.h>
 #include "pitch.h"
+#include "synth.h"
 #include <pthread.h>
 
 const char *playbackModes[NUM_PLAYBACK_MODES] = {
@@ -16,23 +17,22 @@ float calculate_frequency(int midiNote, float detune) {
          powf(2.0f, (midiNote - 69 + detune) / 12.0f); // A4 = MIDI 69 = 440Hz
 }
 
-bool update_arp(ArpData *data) {
+// Updates the arp index and returns the current note to be played
+// This function should maybe trigger envelope?
+int update_arp(ArpData *data) {
     if (data->arp_note_count == 0) {
-        return false;
+        return 0;
     }
-
     data->arp_time += 1.0f / SAMPLE_RATE;
     if (data->arp_time >= data->arp_interval) {
         data->arp_time = 0.0f;
 
         data->arp_index = (data->arp_index + 1) % data->arp_note_count;
-        if (data->arp_index != data->last_note_index) {
-            data->last_note_index = data->arp_index;
-            return true;
-        }
     }
-    return false;
+    return data->arp_notes[data->arp_index];
 }
+
+// int arp_trigger_note(ArpData *arpData, EnvData *envData, SynthData *
 
 int get_arp_note(ArpData *data) {
     return data->arp_notes[data->arp_index];
@@ -90,10 +90,15 @@ float update_envelope(EnvData *env) {
             }
             break;
         case 3: // Sustain
-            // Hold value
+            env->currentHoldValue += dt;
+            // TODO: Why has arp mode broke?
+            if (env->currentHoldValue >= env->holdTime) {
+                env->currentHoldValue = 0.0f;
+                env->stage = 4;
+            }
             break;
         case 4: // Release
-            env->currentValue -= dt / env->releaseTime * env->currentValue;
+            env->currentValue -= dt / env->releaseTime;
             if (env->currentValue <= 0.0f) {
                 env->currentValue = 0.0f;
                 env->stage = 0; // Idle
@@ -106,6 +111,7 @@ float update_envelope(EnvData *env) {
 void reset_envelope_stage(EnvData *env) {
     pthread_mutex_lock(&env->lock);
     env->stage = 1;
+    env->currentHoldValue = 0.0f;
     pthread_mutex_unlock(&env->lock);
 }
 

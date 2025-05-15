@@ -61,6 +61,7 @@ static int audioCallback(
     float mix, mixSub, mixFiltered;
     float env;
     int currentNote;
+    int prevNote = 0;
 
     AudioData *audioData = (AudioData*)userData;
     SynthData *synthData = &audioData->synthData;
@@ -79,12 +80,14 @@ static int audioCallback(
     for (unsigned int i = 0; i < framesPerBuffer; i++) {
         // Updating the frequency each frame now, maybe not necessary
         // Can be changed in future if performance is an issue
-        if (update_arp(arpData)) {
-            envData->stage = 1;
-            envData->currentValue = 0.0f;
+        prevNote = currentNote;
+        currentNote = update_arp(arpData);
+        // This will not really work with single note mode
+        // Repeated notes will not trigger envelope
+        if (prevNote != currentNote) {
+            reset_envelope_stage(envData);
         }
         env = update_envelope(envData);
-        currentNote = get_arp_note(arpData);
         freqOsc1 = calculate_frequency(currentNote, 0);
         freqOsc2 = calculate_frequency(currentNote, synthData->osc2Detune);
         freqOscSub = calculate_frequency(currentNote - 24, 0); // Should have some check here so that note > 0

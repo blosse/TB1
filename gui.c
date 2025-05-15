@@ -62,6 +62,7 @@ int run_gui(AudioData *data) {
     float localDecayTime = envData->decayTime;
     float localSustainLevel = envData->sustainLevel;
     float localReleaseTime = envData->releaseTime;
+    float localHoldTime = envData->holdTime;
 
     while (!WindowShouldClose()) {
         BeginDrawing();
@@ -149,25 +150,34 @@ int run_gui(AudioData *data) {
         }
 
         // Envelope sliders
+        // Attack
         if (GuiSlider((Rectangle){ 53, 53, SLIDER_WIDTH_LONG, 20 }, "ATCK", NULL, &localAttackTime, 0.0f, 1.0f)) {
             pthread_mutex_lock(&envData->lock);
             envData->attackTime = localAttackTime;
             pthread_mutex_unlock(&envData->lock);
         }
-
+        // Decay
         if (GuiSlider((Rectangle){ 53, 77, SLIDER_WIDTH_LONG, 20 }, "DECY", NULL, &localDecayTime, 0.0f, 1.0f)) {
             pthread_mutex_lock(&envData->lock);
             envData->decayTime = localDecayTime;
             pthread_mutex_unlock(&envData->lock);
         }
+        // Sustain
         if (GuiSlider((Rectangle){ 53, 101, SLIDER_WIDTH_LONG, 20 }, "SUST", NULL, &localSustainLevel, 0.0f, 1.0f)) {
             pthread_mutex_lock(&envData->lock);
             envData->sustainLevel = localSustainLevel;
             pthread_mutex_unlock(&envData->lock);
         }
+        // Release
         if (GuiSlider((Rectangle){ 53, 125, SLIDER_WIDTH_LONG, 20 }, "RELE", NULL, &localReleaseTime, 0.0f, 1.0f)) {
             pthread_mutex_lock(&envData->lock);
             envData->releaseTime = localReleaseTime;
+            pthread_mutex_unlock(&envData->lock);
+        }
+        // Hold
+        if (GuiSlider((Rectangle){ 247, 125, SLIDER_WIDTH_LONG, 20 }, "HOLD", NULL, &localHoldTime, 0.0f, 1.0f)) {
+            pthread_mutex_lock(&envData->lock);
+            envData->holdTime = localHoldTime;
             pthread_mutex_unlock(&envData->lock);
         }
         // Draw white keys
