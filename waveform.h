@@ -1,3 +1,4 @@
+#pragma once
 #ifndef WAVEFORM_H
 #define WAVEFORM_H
 #define NUM_WAVEFORMS 4

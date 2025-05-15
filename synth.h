@@ -1,5 +1,4 @@
-#ifndef SYNTH_H
-#define SYNTH_H
+#pragma once
 
 #include <portaudio.h>
 #include <pthread.h>
@@ -61,4 +60,3 @@ float highpass_filter(SynthData *data, float input);
 void update_highpass_alpha(SynthData *data);
 
 float saturate(float input);
-#endif

@@ -1,3 +1,4 @@
+#pragma once
 #ifndef MAX_ARP_NOTES
 #define MAX_ARP_NOTES 8
 #endif
@@ -39,6 +40,8 @@ typedef struct {
     float decayTime;
     float sustainLevel;
     float releaseTime;
+    float holdTime;
+    float currentHoldValue;
     float currentValue;
     float elapsedTime;
     int stage; // 0 = idle, 1 = attack, 2 = decay, 3 = sustain, 4 = release
@@ -48,7 +51,7 @@ typedef struct {
 float calculate_frequency(int midiNote, float detune);
 
 // Arp stuff
-bool update_arp(ArpData *data);
+int update_arp(ArpData *data);
 void add_arp_note(ArpData *data, int midiNote);
 void remove_arp_note(ArpData *data, int midiNote);
 void clear_arp_notes(ArpData *data);
