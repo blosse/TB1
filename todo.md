@@ -35,9 +35,6 @@ Add delay effect.
 ### Arp tempo
 Add tempo control to the arp.
 
-### In Progress - LFO
-Implement a LFO to control the filter or resonance.
-
 ## Improvments and reworks
 List of reworks of existing functionallity to improve upon it
 
@@ -54,12 +51,11 @@ List of known bugs that need to be addressed.
 ### Resonance is barely noticable
 Confirm that resonance is working as intended. Currently there is a barely noticable change when moving the resonance slider.
 
-### Envelope release isn't working properly
-In single note mode, notes should "ring out" after being swithed off. This is not the current behavior.
-This also affects arp mode but this should be addressed by the hold control feature.
-
 ## Completed tasks
 List of completed changes. It will be cleared out every once in a while.
+
+### LFO
+Implement a LFO to control the filter or resonance.
 
 ### Hold control for note length in arp mode
 Add some way to control the note length while in arp mode. Currently notes are held until the note switches.
