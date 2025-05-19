@@ -58,13 +58,13 @@ Confirm that resonance is working as intended. Currently there is a barely notic
 In single note mode, notes should "ring out" after being swithed off. This is not the current behavior.
 This also affects arp mode but this should be addressed by the hold control feature.
 
-### Buttons look "squished"
-The buttons for wave type and playback mode are rendering incorrectly. They look kinda "squished", like the button outline has been squished down into a strikethrough of the button label.
-
-## Completed changes
+## Completed tasks
 List of completed changes. It will be cleared out every once in a while.
 
 ### Hold control for note length in arp mode
 Add some way to control the note length while in arp mode. Currently notes are held until the note switches.
 This makes the release section of the envelope useless.
+
+### Buttons look "squished"
+The buttons for wave type and playback mode are rendering incorrectly. They look kinda "squished", like the button outline has been squished down into a strikethrough of the button label.
 
