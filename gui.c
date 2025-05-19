@@ -12,7 +12,7 @@
 #define SLIDER_WIDTH_SHORT 48
 #define SLIDER_HEIGHT 20
 #define BUTTON_WIDTH 40
-#define BUTTON_HEIGHT 2
+#define BUTTON_HEIGHT 20
 #define KEY_WIDTH 30
 #define KEY_HEIGHT 40
 
