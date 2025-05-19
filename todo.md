@@ -35,7 +35,7 @@ Add delay effect.
 ### Arp tempo
 Add tempo control to the arp.
 
-### LFO
+### In Progress - LFO
 Implement a LFO to control the filter or resonance.
 
 ## Improvments and reworks
