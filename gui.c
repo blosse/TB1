@@ -12,7 +12,7 @@
 #define SLIDER_WIDTH_SHORT 48
 #define SLIDER_HEIGHT 20
 #define BUTTON_WIDTH 40
-#define BUTTON_HEIGHT 20
+#define BUTTON_HEIGHT 2
 #define KEY_WIDTH 30
 #define KEY_HEIGHT 40
 
@@ -58,6 +58,8 @@ int run_gui(AudioData *data) {
     float localSubMix = synthData->subMix;
     float localDetune = synthData->osc2Detune;
     float localLPResonance = synthData->lowpass_resonance;
+    float localLFOFreq = synthData->filter_cutoff_lfo.frequency;
+    float localLFODepth = synthData->filter_cutoff_lfo.depth;
     float localAttackTime = envData->attackTime;
     float localDecayTime = envData->decayTime;
     float localSustainLevel = envData->sustainLevel;
@@ -141,6 +143,22 @@ int run_gui(AudioData *data) {
             update_lowpass_alpha(synthData);
             pthread_mutex_unlock(&synthData->lock);
         }
+
+        // Filter LFO Freq Slider
+        if (GuiSlider((Rectangle){ 247, 77, SLIDER_WIDTH_LONG, 20 }, "LFO", NULL, &localLFOFreq, 0.0f, 20.0f)) {
+            pthread_mutex_lock(&synthData->lock);
+            synthData->filter_cutoff_lfo.frequency = localLFOFreq;
+            update_lowpass_alpha(synthData);
+            pthread_mutex_unlock(&synthData->lock);
+        }
+        
+        // Filter LFO Depth Slider
+        if (GuiSlider((Rectangle){ 247, 101, SLIDER_WIDTH_LONG, 20 }, "DEPH", NULL, &localLFODepth, 0.0f, 200.0f)) {
+            pthread_mutex_lock(&synthData->lock);
+            synthData->filter_cutoff_lfo.depth = localLFODepth;
+            update_lowpass_alpha(synthData);
+            pthread_mutex_unlock(&synthData->lock);
+        }
         
         // Playback mode button
         if (GuiButton((Rectangle){ 16, 198, BUTTON_WIDTH, BUTTON_HEIGHT }, playbackModes[arpData->playback_mode])) {
@@ -208,7 +226,6 @@ int run_gui(AudioData *data) {
                     }
                     break;
             }
-
         }
 
         // Draw black keys

@@ -19,6 +19,13 @@ typedef struct {
 } Oscillator;
 
 typedef struct {
+    float frequency;
+    float phase;
+    float depth;
+    WaveformType waveform;
+} LFO;
+
+typedef struct {
     Oscillator osc1;
     Oscillator osc2;
     Oscillator oscSub;
@@ -32,6 +39,7 @@ typedef struct {
     float lowpass_last_sample; // Not needed?
     float lowpass_alpha;
     float lowpass_cutoff;
+    float lowpass_cutoff_modulated;
     float lowpass_resonance;
     float lowpass_feedback;
 
@@ -39,6 +47,8 @@ typedef struct {
     float highpass_prev_output;
     float highpass_cutoff;
     float highpass_alpha;
+
+    LFO filter_cutoff_lfo;
     
     pthread_mutex_t lock;
 } SynthData;
@@ -63,3 +73,5 @@ float highpass_filter(SynthData *data, float input);
 void update_highpass_alpha(SynthData *data);
 
 float saturate(float input);
+
+float update_filter_cutoff_lfo(LFO *data);

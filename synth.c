@@ -1,8 +1,8 @@
 /* A little synth project */
 
-
 #include "synth.h"
 #include "pitch.h"
+#include "waveform.h"
 #include <stdio.h>
 #include <math.h>
 #include <string.h>
@@ -19,11 +19,12 @@ float lowpass_two_stage(float input, SynthData *data) {
     data->lowpass_stage1 += data->lowpass_alpha * (inputWithFeedback - data->lowpass_stage1);
     // Second stage
     data->lowpass_stage2 += data->lowpass_alpha * (data->lowpass_stage1 - data->lowpass_stage2);
+    printf("filter cutoff: %f\n", data->lowpass_cutoff_modulated);
     return data->lowpass_stage2;
 }
 
 void update_lowpass_alpha(SynthData *data) {
-    float rc = 1.0f / (2.0f * M_PI * data->lowpass_cutoff);
+    float rc = 1.0f / (2.0f * M_PI * data->lowpass_cutoff_modulated);
     float dt = 1.0f / SAMPLE_RATE;
     data->lowpass_alpha = dt / (rc + dt);
 }
@@ -39,6 +40,34 @@ void update_highpass_alpha(SynthData *data) {
     float rc = 1.0f / (2.0f * M_PI * data->highpass_cutoff);
     float dt = 1.0f / SAMPLE_RATE;
     data->highpass_alpha = rc / (rc + dt);
+}
+
+float update_filter_cutoff_lfo(LFO *data) {
+    if (data->depth <= 0.01f) return 0;
+
+    float value = 0.0f;
+    float phase = data->phase;
+    
+    switch (data->waveform) {
+        case WAVE_SINE:
+            value = sinf(2 * M_PI * phase);
+            break;
+        case WAVE_SQUARE:
+            value = (phase < 0.5f) ? 1.0f : -1.0f;
+            break;
+        case WAVE_TRIANGLE:
+            value = 4.0f * fabsf(phase - 0.5f) - 1.0f;
+            break;
+        case WAVE_SAW:
+            value = 2.0f * (phase - 0.5f);
+            break;
+    }
+
+    data->phase += data->frequency / SAMPLE_RATE;
+    if ( data->phase >= 1.0f ) data->phase -= 1.0f;
+
+    printf("LFO mod: %f - ", value * data->depth);
+    return value * data->depth;
 }
 
 void on_new_arp_note(int midiNote, void *data) {
@@ -104,24 +133,17 @@ static int audioCallback(
         // Can be changed in future if performance is an issue
         update_arp(arpData);
         env = update_envelope(envData);
-        // if (arpData->arp_mode == ARP) {
-        //     currentNote = get_arp_note(arpData);
-        //     freqOsc1 = calculate_frequency(currentNote, 0);
-        //     freqOsc2 = calculate_frequency(currentNote, synthData->osc2Detune);
-        //     freqOscSub = calculate_frequency(currentNote - 24, 0); // Should have some check here so that note > 0
 
-        //     pthread_mutex_lock(&synthData->lock);
-        //     synthData->osc1.frequency = freqOsc1; // Frequency of the fst oscillator
-        //     synthData->osc2.frequency = freqOsc2; // Frequency of the snd oscillator
-        //     synthData->oscSub.frequency = freqOscSub; // Frequency of the sub oscillator
-        //     pthread_mutex_unlock(&synthData->lock);
-        // }
         sampleOsc1 = amplitude * env * generate_sample(wave1, synthData->osc1.phase);
         sampleOsc2 = amplitude * env * generate_sample(wave2, synthData->osc2.phase);
         sampleOscSub = amplitude * env * generate_sample(waveSub, synthData->oscSub.phase);
 
         // Mix oscillators
         float mixedSample = (mix * sampleOsc1) + ((1.0f - mix) * sampleOsc2) + (mixSub * sampleOscSub);
+
+        // Modulate LFO
+        synthData->lowpass_cutoff_modulated = synthData->lowpass_cutoff + update_filter_cutoff_lfo(&synthData->filter_cutoff_lfo);
+        update_lowpass_alpha(synthData);
 
         // Apply filters
         float lpFiltered = lowpass_two_stage(mixedSample, synthData);

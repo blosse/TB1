@@ -25,6 +25,12 @@ int main() {
         .frequency = 220.f,
         .waveform = WAVE_SINE,
     };
+    LFO oscLFO = {
+        .phase = 0.0f,
+        .frequency = 5.0f,
+        .depth = 1.0f,
+        .waveform = WAVE_SINE,
+    };
     SynthData synthData = {
         .osc1 = osc1,
         .osc2 = osc2,
@@ -37,6 +43,7 @@ int main() {
         .highpass_cutoff = log10f(200.0f),
         .highpass_prev_input = 0.5f,
         .highpass_prev_output = 0.5f,
+        .filter_cutoff_lfo = oscLFO,
     };
     ArpData arpData = {
         .arp_note_count = 0,
