@@ -65,6 +65,7 @@ int run_gui(AudioData *data) {
     float localSustainLevel = envData->sustainLevel;
     float localReleaseTime = envData->releaseTime;
     float localHoldTime = envData->holdTime;
+    float localArpTempo = arpData->arp_tempo;
 
     while (!WindowShouldClose()) {
         BeginDrawing();
@@ -193,9 +194,15 @@ int run_gui(AudioData *data) {
             pthread_mutex_unlock(&envData->lock);
         }
         // Hold
-        if (GuiSlider((Rectangle){ 247, 125, SLIDER_WIDTH_LONG, 20 }, "HOLD", NULL, &localHoldTime, 0.0f, 1.0f)) {
+        if (GuiSlider((Rectangle){ 247, 125, SLIDER_WIDTH_SHORT, 20 }, "HOLD", NULL, &localHoldTime, 0.0f, 1.0f)) {
             pthread_mutex_lock(&envData->lock);
             envData->holdTime = localHoldTime;
+            pthread_mutex_unlock(&envData->lock);
+        }
+        // Arp tempo
+        if (GuiSlider((Rectangle){ 299, 125, SLIDER_WIDTH_SHORT, 20 }, NULL, "TMPO", &localArpTempo, 0.05f, 1.5f)) {
+            pthread_mutex_lock(&envData->lock);
+            arpData->arp_tempo = localArpTempo;
             pthread_mutex_unlock(&envData->lock);
         }
         // Draw white keys

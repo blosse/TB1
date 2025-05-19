@@ -22,7 +22,7 @@ float calculate_frequency(int midiNote, float detune) {
 void update_arp(ArpData *data) {
     if (data->arp_note_count == 0) return;
 
-    data->arp_time += 1.0f / SAMPLE_RATE;
+    data->arp_time += 1.0f / (SAMPLE_RATE * data->arp_tempo);
     if (data->arp_time >= data->arp_interval) {
         data->arp_time = 0.0f;
         data->arp_index = (data->arp_index + 1) % data->arp_note_count;

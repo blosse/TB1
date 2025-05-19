@@ -49,6 +49,7 @@ int main() {
         .arp_note_count = 0,
         .arp_notes = { -1 },
         .arp_interval = 0.25f,
+        .arp_tempo = 1.0f,
     };
     EnvData envData = {
         .attackTime = 0.5f,

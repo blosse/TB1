@@ -16,6 +16,7 @@ typedef struct {
     int arp_index;
     int arp_note_count;
     float arp_time;
+    float arp_tempo;
     float arp_interval;
     int arp_mode;
     int playback_mode;
