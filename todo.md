@@ -32,7 +32,7 @@ There is some saturation at the filter stage(?) currently. Add some saturation c
 ### Delay effect
 Add delay effect.
 
-### Arp tempo
+### In Progress - Arp tempo
 Add tempo control to the arp.
 
 ## Improvments and reworks
