@@ -32,9 +32,6 @@ There is some saturation at the filter stage(?) currently. Add some saturation c
 ### Delay effect
 Add delay effect.
 
-### In Progress - Arp tempo
-Add tempo control to the arp.
-
 ## Improvments and reworks
 List of reworks of existing functionallity to improve upon it
 
@@ -56,6 +53,9 @@ List of completed changes. It will be cleared out every once in a while.
 
 ### LFO
 Implement a LFO to control the filter or resonance.
+
+### Arp tempo
+Add tempo control to the arp.
 
 ### Hold control for note length in arp mode
 Add some way to control the note length while in arp mode. Currently notes are held until the note switches.
