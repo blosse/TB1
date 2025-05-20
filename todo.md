@@ -19,7 +19,7 @@ Notes played only when the mouse is clicking them, rather than toggling.
 ### Polyphonic mode
 Add a mode for polyphonic playing.
 
-### Arp modes
+### In Progress - Arp modes
 Currently notes are being played in the order they have been selected. The following modes should be added:
 - Up
 - Down
