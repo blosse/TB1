@@ -19,7 +19,6 @@ float lowpass_two_stage(float input, SynthData *data) {
     data->lowpass_stage1 += data->lowpass_alpha * (inputWithFeedback - data->lowpass_stage1);
     // Second stage
     data->lowpass_stage2 += data->lowpass_alpha * (data->lowpass_stage1 - data->lowpass_stage2);
-    printf("filter cutoff: %f\n", data->lowpass_cutoff_modulated);
     return data->lowpass_stage2;
 }
 
@@ -66,7 +65,6 @@ float update_filter_cutoff_lfo(LFO *data) {
     data->phase += data->frequency / SAMPLE_RATE;
     if ( data->phase >= 1.0f ) data->phase -= 1.0f;
 
-    printf("LFO mod: %f - ", value * data->depth);
     return value * data->depth;
 }
 

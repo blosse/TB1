@@ -200,7 +200,7 @@ int run_gui(AudioData *data) {
             pthread_mutex_unlock(&envData->lock);
         }
         // Arp tempo
-        if (GuiSlider((Rectangle){ 299, 125, SLIDER_WIDTH_SHORT, 20 }, NULL, "TMPO", &localArpTempo, 0.05f, 1.5f)) {
+        if (GuiSlider((Rectangle){ 299, 125, SLIDER_WIDTH_SHORT, 20 }, NULL, "TMPO", &localArpTempo, 0.05f, 4.0f)) {
             pthread_mutex_lock(&envData->lock);
             arpData->arp_tempo = localArpTempo;
             pthread_mutex_unlock(&envData->lock);
@@ -246,8 +246,8 @@ int run_gui(AudioData *data) {
                         blackKeyStates[i] = true;
                         int midiNote = BASE_NOTE + blackOffsets[i];
                         clear_arp_notes(arpData);
-                        trigger_envelope(envData);
                         add_arp_note(arpData, midiNote);
+                        trigger_envelope(envData);
                     }
                     break;
 
