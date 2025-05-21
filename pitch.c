@@ -48,17 +48,60 @@ void arp_set_callback(ArpData *data, ArpNoteCallback cb, void *userData) {
 }
 
 void add_arp_note(ArpData *data, int midiNote) {
+    // This thing is a mess
+    // Big 'ol if ladder here, I don't love it
+    printf("Add note: %d\n", midiNote);
+    if (data->arp_note_count >= MAX_ARP_NOTES) {
+        printf("Max number of arp notes\n");
+        return;
+    }
     pthread_mutex_lock(&data->lock);
+    if (data->arp_note_count < 1) {
+        data->arp_notes[data->arp_note_count++] = midiNote;
+        pthread_mutex_unlock(&data->lock);
+        return;
+    }
+    if (data->arp_note_count == 1) {
+        if (midiNote > data->arp_notes[0]) {
+            data->arp_notes[data->arp_note_count++] = midiNote;
+        }
+        else {
+            data->arp_notes[1] = data->arp_notes[0];
+            data->arp_notes[0] = midiNote;
+            data->arp_note_count++;
+        }
+        pthread_mutex_unlock(&data->lock);
+        return;
+    }
+    if (midiNote < data->arp_notes[0]) {
+        data->arp_note_count++;
+        int j = data->arp_note_count-1;
+        for (; j >= 0; j--) {
+            data->arp_notes[j+1] = data->arp_notes[j];
+        }
+        data->arp_notes[0] = midiNote;
+        pthread_mutex_unlock(&data->lock);
+        return;
+    }
     for (int i = 0; i < data->arp_note_count; i++) {
         if (data->arp_notes[i] == midiNote) {
             pthread_mutex_unlock(&data->lock);
             return;
         }
+        if ((data->arp_notes[i] < midiNote && data->arp_notes[i+1] > midiNote)) {
+            // Nested for loops yeehaw
+            // Also some duplicate code here...
+            data->arp_note_count++;
+            for (int j  = data->arp_note_count-1; j > i; j--) {
+                data->arp_notes[j+1] = data->arp_notes[j];
+            }
+            data->arp_notes[i+1] = midiNote;
+            pthread_mutex_unlock(&data->lock);
+        }
     }
-    if (data->arp_note_count < MAX_ARP_NOTES) {
-        data->arp_notes[data->arp_note_count++] = midiNote;
-    }
+    data->arp_notes[data->arp_note_count++] = midiNote;
     pthread_mutex_unlock(&data->lock);
+    return;
 }
 
 void remove_arp_note(ArpData *data, int midiNote) {

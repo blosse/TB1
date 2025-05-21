@@ -239,6 +239,12 @@ int run_gui(AudioData *data) {
                         int midiNote = BASE_NOTE + whiteOffsets[i];
                         if (whiteKeyStates[i]) {
                             add_arp_note(arpData, midiNote);
+                            printf("Num notes: %d\n", arpData->arp_note_count);
+                            printf("Arp notes:");
+                            for (int i = 0; i < arpData->arp_note_count; i++) {
+                                printf(" %d", arpData->arp_notes[i]);
+                            }
+                        printf("\n");
                         } else {
                             remove_arp_note(arpData, midiNote);
                         }
