@@ -45,6 +45,9 @@ Sliders aren't really useful in their full value ranges. Finetune min/max values
 ## Bugs
 List of known bugs that need to be addressed.
 
+### add_arp_note is constantly called in single note mode
+When in single note mode function add_arp_note is constantly called since there is no check for "re-toggling" of the note.
+
 ### Resonance is barely noticable
 Confirm that resonance is working as intended. Currently there is a barely noticable change when moving the resonance slider.
 
