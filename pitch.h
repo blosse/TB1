@@ -1,13 +1,12 @@
 #pragma once
-#ifndef MAX_ARP_NOTES
-#define MAX_ARP_NOTES 8
-#endif
 
 #include <pthread.h>
 #include <stdbool.h>
 
 #define SAMPLE_RATE 44100
 #define NUM_PLAYBACK_MODES 2
+#define MAX_ARP_NOTES 8
+#define NUM_ARP_MODES 5
 
 typedef void (*ArpNoteCallback)(int midiNote, void *userData);
 
@@ -19,6 +18,7 @@ typedef struct {
     float arp_tempo;
     float arp_interval;
     int arp_mode;
+    int up_down_dir;
     int playback_mode;
     int last_note_index;
     pthread_mutex_t lock;
@@ -37,9 +37,11 @@ enum arp_mode {
     UP,
     UP_DOWN,
     RANDOM,
+    ROBYN,
 };
 
 const char *playbackModes[NUM_PLAYBACK_MODES];
+const char *arpModes[NUM_ARP_MODES];
 
 typedef struct {
     float attackTime;
