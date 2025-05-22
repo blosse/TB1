@@ -1,3 +1,4 @@
+#include "pitch.h"
 #define RAYGUI_IMPLEMENTATION
 
 #include <stdbool.h>
@@ -203,6 +204,13 @@ int run_gui(AudioData *data) {
             pthread_mutex_unlock(&arpData->lock);
         }
 
+        // Arp mode selector
+        if (GuiButton((Rectangle){ 180, 76, BUTTON_WIDTH, BUTTON_HEIGHT }, arpModes[arpData->arp_mode])) {
+            pthread_mutex_lock(&arpData->lock);
+            arpData->arp_mode = (arpData->arp_mode + 1) % NUM_ARP_MODES;
+            pthread_mutex_unlock(&arpData->lock);
+        }
+
         // OSC1 Waveform selector
         if (GuiButton((Rectangle){ 180, 28, BUTTON_WIDTH, BUTTON_HEIGHT }, waveNames[synthData->osc1.waveform])) {
             pthread_mutex_lock(&synthData->lock);
@@ -238,13 +246,12 @@ int run_gui(AudioData *data) {
                     if (whiteKeyStates[i] != prevWhiteKeyStates[i]) {
                         int midiNote = BASE_NOTE + whiteOffsets[i];
                         if (whiteKeyStates[i]) {
-                            add_arp_note(arpData, midiNote);
-                            printf("Num notes: %d\n", arpData->arp_note_count);
-                            printf("Arp notes:");
-                            for (int i = 0; i < arpData->arp_note_count; i++) {
-                                printf(" %d", arpData->arp_notes[i]);
+                            if (arpData->arp_mode == ROBYN) {
+                                memset(whiteKeyStates, 0, sizeof(whiteKeyStates));
+                                memset(blackKeyStates, 0, sizeof(blackKeyStates));
+                                whiteKeyStates[i] = true;
                             }
-                        printf("\n");
+                            add_arp_note(arpData, midiNote);
                         } else {
                             remove_arp_note(arpData, midiNote);
                         }
@@ -274,6 +281,11 @@ int run_gui(AudioData *data) {
                     if (blackKeyStates[i] != prevBlackKeyStates[i]) {
                         int midiNote = BASE_NOTE + blackOffsets[i];
                         if (blackKeyStates[i]) {
+                            if (arpData->arp_mode == ROBYN) {
+                                memset(whiteKeyStates, 0, sizeof(whiteKeyStates));
+                                memset(blackKeyStates, 0, sizeof(blackKeyStates));
+                                blackKeyStates[i] = true;
+                            }
                             add_arp_note(arpData, midiNote);
                         } else {
                             remove_arp_note(arpData, midiNote);
